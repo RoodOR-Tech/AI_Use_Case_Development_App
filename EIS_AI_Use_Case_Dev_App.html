@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Use Case Sandbox</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23173f56'/%3E%3Cstop offset='1' stop-color='%230f75b0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='18' fill='url(%23g)'/%3E%3Ctext x='50' y='66' font-family='Arial' font-weight='900' font-size='48' text-anchor='middle' fill='white'%3EAI%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <style>
+/* AI Use Case Sandbox: visual language matches the EIS AI Strategy Development
+   Facilitation App (Oregon Enterprise Information Services): dark teal header with logo,
+   EIS blue actions, green accents, flat gray page. Colors sampled from the live app. */
+
+:root {
+  --ink: #222222;
+  --muted: #55606a;
+  --line: #d3dae0;
+  --paper: #ffffff;
+  --soft: #f4f6f8;
+  --page: #eff1f3;
+  --header: #173f56;
+  --blue: #0f75b0;
+  --blue-dark: #0b5d8e;
+  --navy: #173f56;
+  --navy-text: #173f56;
+  --teal: #375e4c;
+  --pill-bg: #ecf5f2;
+  --pill-line: #92a59c;
+  --btn-soft: #e6ecf1;
+  --gold: #986b17;
+  --green: #375e4c;
+  --red: #8f2f22;
+  --shadow: 0 10px 30px rgba(23, 63, 86, 0.10);
+  --shadow-sm: 0 4px 16px rgba(23, 63, 86, 0.07);
+  --radius: 6px;
+  --font: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--ink);
+  line-height: 1.5;
+  background: var(--page);
+}
+
+button, textarea, input, select { font: inherit; }
+:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+
+.skip-link {
+  position: absolute; left: 8px; top: -64px; z-index: 40; background: var(--navy); color: #fff;
+  font-weight: 700; padding: 10px 14px; border-radius: 0 0 6px 6px; text-decoration: none; transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; }
+
+/* --- Header ------------------------------------------------------------ */
+
+header.app-header {
+  display: flex; align-items: center; gap: 16px 28px; flex-wrap: wrap;
+  padding: 26px clamp(16px, 4vw, 44px) 24px;
+  background: var(--header); color: #fff; border-top: 8px solid var(--blue);
+}
+.brand-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.brand-logo { height: 64px; width: auto; display: block; }
+header.app-header .brand { font-size: clamp(1.4rem, 2.6vw, 2.3rem); font-weight: 700; line-height: 1.1; color: #fff; }
+header.app-header .tagline { flex: 1 0 100%; order: 3; margin: 0; font-size: 1.05rem; color: #fff; }
+header.app-header .ws-name { margin-left: auto; font-size: 0.95rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+header.app-header button.linkish {
+  background: #fff; border: 1px solid #fff; color: var(--navy-text);
+  border-radius: var(--radius); padding: 8px 14px; font-size: 0.88rem; font-weight: 700; cursor: pointer; min-height: 40px;
+}
+header.app-header button.linkish:hover { background: var(--btn-soft); }
+header.app-header :focus-visible { outline-color: #fff; }
+
+/* --- Nav tabs ----------------------------------------------------------- */
+
+nav.tabs {
+  width: min(1480px, 100% - 2 * clamp(12px, 2vw, 28px)); margin: 18px auto 0;
+  display: flex; gap: 1px; overflow-x: auto;
+  background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+nav.tabs button {
+  flex: 1 1 0; min-height: 52px; padding: 8px 14px; background: var(--soft); color: #2b3a46; border: 0;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+nav.tabs button:hover { background: #e9eef2; }
+nav.tabs button.active { background: var(--blue); color: #fff; }
+nav.tabs button:focus-visible { outline-offset: -3px; outline-color: var(--navy); }
+nav.tabs[hidden] { display: none; }
+
+/* --- Layout -------------------------------------------------------------- */
+
+main { width: min(1480px, 100%); margin: 0 auto; padding: 18px clamp(12px, 2vw, 28px) 28px; }
+main:focus { outline: none; }
+.card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); padding: 20px 24px; margin-bottom: 18px;
+}
+.card h2 { margin: 0 0 6px; font-size: clamp(1.25rem, 2vw, 1.9rem); line-height: 1.15; color: var(--ink); }
+.card h3 { margin: 18px 0 8px; font-size: 1rem; color: var(--navy-text); }
+.card .lead { color: var(--muted); margin: 0 0 14px; font-size: 0.95rem; line-height: 1.47; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* --- Buttons & forms ------------------------------------------------------ */
+
+button.primary, button.secondary, button.subtle, a.btnlike {
+  min-height: 44px; border-radius: var(--radius); padding: 9px 16px; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  border: 1px solid transparent; font-family: inherit; text-decoration: none; display: inline-flex;
+  align-items: center; justify-content: center; gap: 8px; transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+button.primary { background: var(--blue); color: #fff; }
+button.primary:hover { background: var(--blue-dark); }
+button.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(15, 117, 176, 0.22); }
+button.primary:disabled { background: #9fb2c5; cursor: not-allowed; transform: none; box-shadow: none; }
+button.secondary, a.btnlike { background: var(--btn-soft); color: var(--navy-text); }
+button.secondary:hover, a.btnlike:hover { background: #d8e1e8; }
+button.subtle { background: #fff; color: var(--navy-text); border-color: #b6c2cf; }
+button.subtle:hover { background: var(--soft); }
+button.danger-subtle { background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.85rem; font-weight: 700; min-height: 36px; padding: 4px 8px; }
+
+input[type="text"], textarea, select {
+  width: 100%; padding: 10px 11px; min-height: 44px; border: 1px solid #8d9aa8; border-radius: var(--radius);
+  font-size: 0.95rem; color: var(--ink); background: #fff; line-height: 1.45;
+}
+input[type="text"]:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
+textarea { resize: vertical; min-height: 96px; }
+::placeholder { color: var(--muted); opacity: 1; }
+label.field-label { display: block; font-weight: 700; margin: 14px 0 4px; font-size: 0.88rem; color: #263545; }
+.help-text { color: var(--muted); font-size: 0.82rem; line-height: 1.35; margin: 3px 0 8px; }
+
+/* --- Status pills & progress ------------------------------------------------ */
+
+.pill { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 5px 14px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; white-space: nowrap; background: var(--pill-bg); color: var(--green); border: 1px solid var(--pill-line); }
+.pill.not_started { background: var(--pill-bg); color: var(--green); }
+.pill.needs_input { background: #fff3d6; color: #6e4d0f; border-color: #d9c28a; }
+.pill.complete { background: var(--green); color: #fff; border-color: var(--green); }
+
+.progress-wrap { height: 10px; border-radius: 999px; background: #e6edf4; overflow: hidden; }
+.progress-bar { height: 100%; min-width: 4px; border-radius: inherit; background: var(--green); transition: width 0.28s ease; }
+
+/* --- Rows (dashboard / home lists) ----------------------------------------- */
+
+.section-row { display: flex; align-items: center; gap: 14px; padding: 12px 8px; border-bottom: 1px solid var(--line); cursor: pointer; border-radius: 6px; }
+.section-row:hover { background: var(--soft); }
+.section-row:last-child { border-bottom: none; }
+.section-row .num {
+  background: var(--header); color: #fff; border-radius: var(--radius); width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;
+}
+.section-row .title { flex: 1; font-weight: 700; font-size: 0.95rem; color: var(--navy-text); }
+.section-row .title small { display: block; font-weight: 400; color: var(--muted); font-size: 0.82rem; }
+
+/* --- Choice chips ------------------------------------------------------------ */
+
+.choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.choices button.chip {
+  min-height: 36px; border: 1px solid #b9c6d3; background: #edf3f9; border-radius: 999px;
+  padding: 7px 12px; font-size: 0.84rem; font-weight: 700; cursor: pointer; color: #25384b;
+}
+.choices button.chip:hover { border-color: var(--blue); }
+.choices button.chip.selected { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* --- Misc ----------------------------------------------------------------------- */
+
+.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.notice { padding: 10px 14px; border-radius: 6px; font-size: 0.9rem; margin: 10px 0; line-height: 1.43; }
+.notice.info { background: #eaf1f9; color: var(--navy-text); border-left: 4px solid var(--blue); }
+.notice.warn { background: #fff9ea; color: #4d3a13; border-left: 4px solid var(--gold); }
+.notice.good { background: var(--pill-bg); color: var(--green); border-left: 4px solid var(--green); }
+.doc-item { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.doc-item:last-child { border-bottom: none; }
+.doc-item .meta { flex: 1; min-width: 200px; }
+.doc-item .meta .name { font-weight: 700; font-size: 0.93rem; color: var(--navy-text); }
+.doc-item .meta .sub { color: var(--muted); font-size: 0.82rem; }
+.save-flash { font-size: 0.8rem; font-weight: 700; color: var(--green); transition: opacity 0.5s; min-height: 1.2em; }
+.empty-state { text-align: center; color: var(--muted); padding: 40px 20px; }
+.empty-state .big { font-size: 2.4rem; margin-bottom: 8px; }
+footer.app-footer {
+  padding: 14px clamp(16px, 3vw, 38px); border-top: 1px solid var(--line); background: #fff;
+  color: var(--muted); font-size: 0.85rem; line-height: 1.4; text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  button.primary:hover { transform: none; }
+}
+
+</style>
+  <style>
+/* AI Use Case Sandbox: screen-specific styles, on the EIS palette in styles.css. */
+
+[hidden] { display: none !important; }
+
+/* Phase tabs (Use Cases screen), numbered like the Socratic Sandbox */
+.phase-stepper {
+  display: grid; grid-template-columns: repeat(5, minmax(60px, 1fr)); gap: 1px; margin-top: 14px;
+  background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+}
+.phase-stepper button {
+  position: relative; min-height: 72px; padding: 10px 5px; display: grid; place-items: center; gap: 2px; text-align: center;
+  background: var(--soft); color: #2b3a46; border: 0; cursor: pointer;
+}
+.phase-stepper button strong { font-size: 1.25rem; font-weight: 600; }
+.phase-stepper button span { color: var(--muted); font-size: 0.85rem; line-height: 1.05; }
+.phase-stepper button.done::after { content: "\2713"; position: absolute; top: 6px; right: 12px; color: var(--green); font-weight: 700; font-size: 0.95rem; }
+.phase-stepper button:hover { background: #e9eef2; }
+.phase-stepper button.active { background: var(--blue); color: #fff; }
+.phase-stepper button.active span { color: rgba(255, 255, 255, 0.94); }
+.phase-stepper button.active.done::after { color: #fff; }
+.phase-stepper button:focus-visible { outline-offset: -3px; outline-color: var(--navy); }
+@media (max-width: 720px) { .phase-stepper { display: flex; overflow-x: auto; } .phase-stepper button { min-width: 76px; } }
+
+/* Use case screen: workspace plus sticky capture panel */
+.with-aside { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 0.42fr); gap: 18px; align-items: start; }
+@media (max-width: 1060px) { .with-aside { grid-template-columns: 1fr; } }
+.capture { position: sticky; top: 16px; max-height: calc(100vh - 32px); display: grid; grid-template-rows: auto 1fr auto; padding: 0; overflow: hidden; margin-bottom: 18px; }
+@media (max-width: 1060px) { .capture { position: static; max-height: none; } }
+.capture-head { padding: 16px; border-bottom: 1px solid var(--line); background: var(--soft); }
+.capture-head h2 { font-size: 1.08rem; margin: 0; }
+.capture-head p { margin: 5px 0 8px; color: var(--muted); font-size: 0.9rem; }
+.capture-scroll { overflow: auto; padding: 14px; display: grid; gap: 11px; align-content: start; }
+.capture-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: #fff; }
+.capture-item.current { border-color: var(--blue); background: #f5fafd; }
+.capture-item h3 { margin: 0 0 7px; font-size: 0.94rem; color: var(--navy-text); }
+.capture-item p { margin: 0; color: #2b3b4b; font-size: 0.9rem; line-height: 1.42; white-space: pre-wrap; }
+.capture-actions { padding: 13px; border-top: 1px solid var(--line); background: var(--soft); display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Phase header */
+.kicker { margin: 0 0 6px; color: var(--green); font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+
+/* The three steps */
+.step { border-left: 4px solid var(--blue); }
+.step .step-tag { display: block; margin-bottom: 8px; color: var(--blue); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+.step.interrogate { border-left-color: var(--gold); }
+.step.interrogate .step-tag { color: var(--gold); }
+.step.consensus { border-left-color: var(--green); }
+.step.consensus .step-tag { color: var(--green); }
+.step > .lead { border-left: 0; }
+
+.prompt-box {
+  font-family: var(--font); font-size: 0.9rem; line-height: 1.44; color: #25384b; min-height: 154px;
+  border-color: #c6d0da; background: #f7fafc;
+}
+
+/* Idea board */
+.bucket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.bucket { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; background: var(--soft); }
+.bucket h4 { margin: 0 0 2px; color: var(--navy-text); font-size: 0.95rem; }
+.idea { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+.idea:last-of-type { border-bottom: none; }
+.idea label { flex: 1; cursor: pointer; }
+.idea.promoted label { color: var(--muted); }
+.idea input[type=checkbox] { margin-top: 5px; width: 18px; height: 18px; accent-color: var(--blue); }
+.add-idea { display: flex; gap: 6px; margin-top: 8px; }
+.add-idea input { flex: 1; }
+
+.risk-list { margin: 6px 0 0; padding-left: 1.2em; font-size: 0.85rem; color: var(--muted); }
+details.hint { margin: 10px 0; font-size: 0.88rem; }
+details.hint summary { cursor: pointer; color: var(--blue); font-weight: 700; }
+.uc-meter { width: 130px; }
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="app-header">
+    <div class="brand-row">
+      <img class="brand-logo" src="data:image/png;base64,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" alt="Oregon Enterprise Information Services">
+      <div class="brand">
+        AI Use Case Sandbox
+      </div>
+    </div>
+    <div class="ws-name" id="header-ws"></div>
+    <p class="tagline">Huddle. Interrogate. Agree. Use your own approved AI tool, then capture the team's use cases.</p>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Sections" hidden>
+    <button data-screen="dashboard">Dashboard</button>
+    <button data-screen="ideas">Idea Board</button>
+    <button data-screen="usecases">Use Cases</button>
+    <button data-screen="export">Export Center</button>
+  </nav>
+
+  <main id="main" tabindex="-1"></main>
+
+  <footer class="app-footer">
+    Progress saves automatically. AI responses are input for your team's judgment, not decisions.
+  </footer>
+  <script>
+const __mods = {};
+// The browser has no disk: a localStorage-backed stand-in for lib/store.js.
+__mods['./store'] = (function () {
+  const KEY = 'ucs_standalone_db';
+  let db = null;
+  function load() {
+    if (db) return db;
+    try { db = JSON.parse(localStorage.getItem(KEY)); } catch (_) { db = null; }
+    if (!db || typeof db !== 'object') db = {};
+    db.workspaces = db.workspaces || {}; db.seq = db.seq || 1;
+    return db;
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(load())); }
+    catch (e) { alert('Your browser would not save progress (storage blocked or full). Export your work now.'); }
+  }
+  function nextId(prefix) { const d = load(); return prefix + '_' + (d.seq++).toString(36) + Date.now().toString(36); }
+  return { load, save, nextId };
+})();
+__mods['./template'] = (function () {
+const module = { exports: {} }; const require = (p) => __mods[p]; const process = { env: {} };
+'use strict';
+
+// The six phases of the Socratic Sandbox for AI use case identification.
+// Each phase follows the same three-beat rhythm:
+//   Step 1 Huddle      — the team captures what it knows, in plain boxes.
+//   Step 2 Interrogate — the team pressure-tests it with an AI (prompt is generated).
+//   Step 3 Consensus   — the team records the agreed result.
+// Phase 1 is team-wide (the idea board); phases 2-6 run once per use case.
+
+const BUCKETS = [
+  { id: 'repetitive', label: 'Repetitive work', help: 'The same task done over and over.' },
+  { id: 'bottleneck', label: 'Bottlenecks or time drag', help: 'Work that waits, queues, or takes far longer than it should.' },
+  { id: 'inconsistent', label: 'Inconsistent results or responses', help: 'Different people give different answers to the same question.' },
+  { id: 'volume', label: 'Task volume exceeds staff capacity', help: 'More work arrives than staff can handle.' },
+  { id: 'other', label: 'Other', help: 'Friction that does not fit the boxes above.' }
+];
+
+const GOAL_TYPES = ['Automation', 'Efficiency', 'Standardization'];
+const OUTCOME_TYPES = ['Time savings', 'Greater satisfaction', 'Increased throughput', 'Better consistency or quality', 'Lower cost', 'Other'];
+
+const RISK_PROMPTS = [
+  'Accuracy: what if the AI is confidently wrong?',
+  'Privacy and sensitive data: what personal or protected data would it touch?',
+  'Fairness: could it treat some groups of people worse than others?',
+  'Security: who could misuse it, or feed it bad input?',
+  'Accountability: who is responsible for the final decision?',
+  'Transparency: would the public or staff know AI was involved?',
+  'Dependence: what happens if the tool is unavailable or the vendor changes?',
+  'Workforce: how does this change people\'s jobs and trust?'
+];
+
+const PHASES = [
+  {
+    id: 'p1', number: 1, scope: 'workspace', short: 'Candidates',
+    title: 'Identify candidate processes for improvement',
+    goal: 'Find existing business processes that might benefit from eliminating repetition, clearing bottlenecks, or increasing consistency.',
+    huddle: {
+      intro: 'Brainstorm current processes that involve some level of friction and sort them into the boxes below. One idea per line; quantity beats polish at this stage.'
+    },
+    interrogate: {
+      intro: 'Choose a few processes to interrogate further. Tick the ideas on the board (3 or 4 works best), then run the prompt below.'
+    },
+    consensus: {
+      label: 'Which processes are we taking forward, and why?',
+      help: 'Record the short list and the reason each one made it. Then promote them to use cases to work through phases 2–6.'
+    }
+  },
+  {
+    id: 'p2', number: 2, scope: 'usecase', short: 'Process',
+    title: 'Document the current process',
+    goal: 'Describe the process in enough detail to see who and what is involved, and decide whether you are after automation, efficiency, or standardization.',
+    huddle: {
+      intro: 'Describe the process as it works today, not as it should work. Rough is fine.',
+      fields: [
+        { id: 'processName', label: 'Process name', type: 'text', placeholder: 'e.g., Responding to public records requests' },
+        { id: 'people', label: 'People involved', type: 'textarea', help: 'Roles, teams, and anyone outside the agency who touches the work.' },
+        { id: 'systems', label: 'Systems and tools', type: 'textarea', help: 'Software, shared drives, email inboxes, paper, spreadsheets.' },
+        { id: 'steps', label: 'Process steps, in order', type: 'textarea', rows: 8, help: 'One step per line, from trigger to finish.' },
+        { id: 'volume', label: 'Volume and effort', type: 'textarea', help: 'How often does it run, how many items, how much staff time?' },
+        { id: 'pain', label: 'Where the pain is', type: 'textarea', help: 'Which steps are slow, repetitive, error-prone, or inconsistent?' },
+        { id: 'goalTypes', label: 'What are we seeking?', type: 'chips', multi: true, options: GOAL_TYPES, help: 'Choose all that apply.' }
+      ]
+    },
+    interrogate: { intro: 'Have the AI play back the process, ask what you left out, and point at the steps with the most friction.' },
+    consensus: {
+      label: 'The agreed process description and improvement goal',
+      help: 'The corrected process, the pain point you are addressing, and whether the goal is automation, efficiency, or standardization.'
+    }
+  },
+  {
+    id: 'p3', number: 3, scope: 'usecase', short: 'Opportunity',
+    title: 'Describe the AI opportunity',
+    goal: 'Identify the specific parts of the process where AI could help, and detail how it would work: inputs, what the AI does, outputs, and how it fits with the human-led steps.',
+    huddle: {
+      intro: 'Describe in detail how you envision an AI system that addresses the pain point. Fill in the four boxes.',
+      fields: [
+        { id: 'inputs', label: 'Box 1 · Data inputs', type: 'textarea', help: 'Describe the data inputs that will go into the AI system.' },
+        { id: 'actions', label: 'Box 2 · What the AI does', type: 'textarea', help: 'What steps will it take, in what order? Think back to the process description.' },
+        { id: 'outputs', label: 'Box 3 · Outputs', type: 'textarea', help: 'What outputs will the system generate?' },
+        { id: 'handoff', label: 'Box 4 · What happens next', type: 'textarea', help: 'Where do the outputs go? Which people or systems take them in?' }
+      ]
+    },
+    interrogate: { intro: 'Ask the AI what you are missing: gaps in the data, the process, or the human review of outputs.' },
+    consensus: {
+      label: 'The final AI opportunity',
+      help: 'Incorporate any changes you made in response to the pressure test.'
+    }
+  },
+  {
+    id: 'p4', number: 4, scope: 'usecase', short: 'Data',
+    title: 'Assess data readiness',
+    goal: 'Evaluate your data sources and identify how to build strong knowledge sources to support an AI-enabled process.',
+    huddle: {
+      intro: 'Describe the input data from the process above.',
+      fields: [
+        { id: 'data', label: 'The input data', type: 'textarea', rows: 8, help: 'Where is it stored? Who owns it? How current is it? Are there multiple versions of the same document? What is the quality?' }
+      ]
+    },
+    interrogate: { intro: 'Ask the AI to name the three biggest data challenges, rank them, and suggest mitigations.' },
+    consensus: { label: 'Data readiness considerations', help: 'The main challenges and what you will do about them.' }
+  },
+  {
+    id: 'p5', number: 5, scope: 'usecase', short: 'Risks',
+    title: 'Evaluate and mitigate risks',
+    goal: 'Systematically consider risks and identify mitigation steps to carry out alongside the use case.',
+    huddle: {
+      intro: 'Identify potential risks of this use case. Use your Risk Management Framework to guide your thinking, then describe the main risks and possible mitigations.',
+      fields: [
+        { id: 'risks', label: 'Risks and mitigations', type: 'textarea', rows: 8, help: 'One risk per line, with a possible mitigation beside it.' }
+      ],
+      prompts: RISK_PROMPTS
+    },
+    interrogate: { intro: 'Ask the AI what you are missing and what the worst case looks like.' },
+    consensus: { label: 'Revised risks and mitigations', help: 'Review the AI output and record your final prioritized list.' }
+  },
+  {
+    id: 'p6', number: 6, scope: 'usecase', short: 'Outcomes',
+    title: 'Identify intended outcomes',
+    goal: 'Define what success looks like and how you might measure it.',
+    huddle: {
+      intro: 'Describe what you expect to improve. Be specific about whether you want time savings, greater satisfaction, increased throughput, or something else.',
+      fields: [
+        { id: 'outcomeTypes', label: 'Kind of improvement', type: 'chips', multi: true, options: OUTCOME_TYPES },
+        { id: 'outcomes', label: 'What will be better?', type: 'textarea', rows: 6, help: 'Say how much better, for whom, compared with today.' }
+      ]
+    },
+    interrogate: { intro: 'Ask the AI for specific metrics, with a low-lift way to collect them that lets you compare the new process with the old.' },
+    consensus: { label: 'Intended outcomes and candidate metrics', help: 'The outcomes you expect and the metrics you will use to check.' }
+  }
+];
+
+function getPhase(id) { return PHASES.find((p) => p.id === id); }
+
+module.exports = { PHASES, BUCKETS, GOAL_TYPES, OUTCOME_TYPES, RISK_PROMPTS, getPhase };
+
+return module.exports;
+})();
+__mods['./prompts'] = (function () {
+const module = { exports: {} }; const require = (p) => __mods[p]; const process = { env: {} };
+'use strict';
+
+// Prompt builders for the Interrogate step. UMD-style so the same code runs in
+// the server (tests, chat context) and in the browser (live prompt preview).
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.Prompts = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  const BLANK = '[not filled in yet]';
+  const v = (s) => (s && String(s).trim()) || BLANK;
+  const list = (a) => (Array.isArray(a) && a.length ? a.join(', ') : '');
+
+  // ctx: { team, ideas (selected idea texts), fields (this phase), uc (use case state: phases) }
+  function consensusOf(uc, phaseId) {
+    return uc && uc.phases && uc.phases[phaseId] ? (uc.phases[phaseId].consensus || '').trim() : '';
+  }
+
+  const BUILDERS = {
+    p1(ctx) {
+      const ideas = (ctx.ideas || []).map((t) => `"${t}"`);
+      const quoted = ideas.length ? ideas.join('; ') : `"${BLANK}"`;
+      return `We are ${ctx.team || 'a government agency'}, considering adopting AI to solve several problems: ${quoted}. ` +
+        'Help us think through which are the most appropriate to delegate to AI by asking some questions that get at ' +
+        'alignment to our mission, service delivery potential, and contribution to staff workload.';
+    },
+
+    p2(ctx) {
+      const f = ctx.fields || {};
+      return `We are ${ctx.team || 'a government agency'}, documenting a business process to find where AI might help.\n\n` +
+        `Process: ${v(f.processName)}\n` +
+        `People involved: ${v(f.people)}\n` +
+        `Systems and tools: ${v(f.systems)}\n` +
+        `Steps, in order:\n${v(f.steps)}\n` +
+        `Volume and effort: ${v(f.volume)}\n` +
+        `Where the pain is: ${v(f.pain)}\n` +
+        `What we are seeking: ${v(list(f.goalTypes))}\n\n` +
+        'First, ask us up to five clarifying questions about anything unclear or missing. Then restate the process as ' +
+        'numbered steps, identify the two or three steps with the most friction, and say whether our goal looks more like ' +
+        'automation, efficiency, or standardization, and why.';
+    },
+
+    p3(ctx) {
+      const f = ctx.fields || {};
+      const p2 = ctx.uc && ctx.uc.phases && ctx.uc.phases.p2;
+      const process = consensusOf(ctx.uc, 'p2') || (p2 && p2.fields && (p2.fields.pain || '').trim()) || BLANK;
+      return `The process and pain point we want to address:\n${process}\n\n` +
+        `We are proposing to address this pain point by creating an AI-enabled process that takes ${v(f.inputs)}, ` +
+        `asks the AI to ${v(f.actions)}, and generates ${v(f.outputs)}. The outputs will then be ${v(f.handoff)}.\n\n` +
+        'What are we missing? Would any additional data be needed? Do you see any gaps in the AI system process or in how ' +
+        'the outputs are used? Give us a few observations about the process and one to three recommendations about how to ' +
+        'improve it, keeping in mind appropriate constraints on what the AI system does and appropriate processes for ' +
+        'human review of the outputs.';
+    },
+
+    p4(ctx) {
+      const f = ctx.fields || {};
+      return `I'm assessing the feasibility of using AI in this process: ${consensusOf(ctx.uc, 'p3') || BLANK}\n\n` +
+        `I want to understand potential challenges with my data sources. The input data is: ${v(f.data)}\n\n` +
+        'What challenges might we expect if using this data to feed the process described? Identify three potential ' +
+        'challenges, prioritize which is the most serious, and provide one to three recommendations on how to mitigate it.';
+    },
+
+    p5(ctx) {
+      const f = ctx.fields || {};
+      return `We are considering this AI use case: ${consensusOf(ctx.uc, 'p3') || BLANK}\n\n` +
+        `We anticipate the following risks and mitigations:\n${v(f.risks)}\n\n` +
+        'What are we missing? What is the worst thing that happens if this goes wrong? Create a summarized list of risks, ' +
+        'prioritize them by importance, and provide one or two mitigation actions to consider for each.';
+    },
+
+    p6(ctx) {
+      const f = ctx.fields || {};
+      const kinds = list(f.outcomeTypes);
+      return `We are considering this AI use case: ${consensusOf(ctx.uc, 'p3') || BLANK}\n\n` +
+        `I want this process to improve ${v(f.outcomes)}${kinds ? ` (kind of improvement: ${kinds})` : ''}.\n\n` +
+        'Identify a set of specific metrics I could measure to track whether these outcomes are actually happening. ' +
+        'Make a recommendation about how to collect the data and at what frequency, keeping in mind that it should be ' +
+        'low-lift and enable us to compare the new process with the old process.';
+    }
+  };
+
+  function buildPrompt(phaseId, ctx) {
+    const b = BUILDERS[phaseId];
+    return b ? b(ctx || {}) : '';
+  }
+
+  // Text a team pastes at the start of a fresh AI chat so it knows what has
+  // already been agreed (for when they cannot keep one conversation going).
+  function contextPrimer(team, uc, ideas) {
+    const lines = [
+      `I'm helping ${team || 'a government team'} work out where AI can responsibly help in our work. I will paste a series of prompts, one phase at a time.`,
+      'Please be direct and specific, ask pointed questions, prefer short lists over long essays, and say plainly when something is a poor fit for AI. Assume a person reviews everything the AI produces.'
+    ];
+    if (ideas && ideas.length) lines.push(`Candidate processes under discussion: ${ideas.join('; ')}.`);
+    if (uc) {
+      const names = { p2: 'Agreed process description', p3: 'Agreed AI opportunity', p4: 'Agreed data readiness', p5: 'Agreed risks and mitigations', p6: 'Agreed outcomes and metrics' };
+      const known = Object.keys(names).filter((k) => consensusOf(uc, k));
+      lines.push(known.length ? `The use case is "${uc.name}". What we have already agreed:` : `The use case is "${uc.name}".`);
+      for (const k of known) lines.push(`${names[k]}:\n${consensusOf(uc, k)}`);
+    }
+    lines.push('Reply with just "Ready" and wait for my first prompt.');
+    return lines.join('\n\n');
+  }
+
+  return { buildPrompt, contextPrimer, BLANK };
+});
+
+return module.exports;
+})();
+window.Prompts = __mods['./prompts'];
+__mods['./exports'] = (function () {
+const module = { exports: {} }; const require = (p) => __mods[p]; const process = { env: {} };
+'use strict';
+
+const { PHASES, BUCKETS } = require('./template');
+
+function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function inlineMd(s) {
+  return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+function mdToHtml(md) {
+  const out = [];
+  let list = null, inTable = false;
+  const closeList = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  const closeTable = () => { if (inTable) { out.push('</tbody></table>'); inTable = false; } };
+  for (const line of md.split('\n')) {
+    if (/^\s*$/.test(line)) { closeList(); closeTable(); continue; }
+    if (line.startsWith('|')) {
+      const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+      if (cells.every((c) => /^[-\s:]+$/.test(c))) continue;
+      closeList();
+      if (!inTable) { out.push('<table><tbody>'); inTable = true; out.push('<tr>' + cells.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr>'); }
+      else out.push('<tr>' + cells.map((c) => `<td>${inlineMd(c)}</td>`).join('') + '</tr>');
+      continue;
+    }
+    closeTable();
+    const h = line.match(/^(#{1,3}) (.*)$/);
+    if (h) { closeList(); out.push(`<h${h[1].length}>${inlineMd(h[2])}</h${h[1].length}>`); continue; }
+    if (line.startsWith('---')) { closeList(); out.push('<hr>'); continue; }
+    if (line.startsWith('> ')) { closeList(); out.push(`<blockquote>${inlineMd(line.slice(2))}</blockquote>`); continue; }
+    if (line.startsWith('- ')) { if (list !== 'ul') { closeList(); out.push('<ul>'); list = 'ul'; } out.push(`<li>${inlineMd(line.slice(2))}</li>`); continue; }
+    const ol = line.match(/^\d+\. (.*)$/);
+    if (ol) { if (list !== 'ol') { closeList(); out.push('<ol>'); list = 'ol'; } out.push(`<li>${inlineMd(ol[1])}</li>`); continue; }
+    closeList();
+    out.push(`<p>${inlineMd(line)}</p>`);
+  }
+  closeList(); closeTable();
+  return out.join('\n');
+}
+
+function printableHtml(title, md) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: Inter, 'Segoe UI', Arial, Helvetica, sans-serif; color: #222; max-width: 800px; margin: 0 auto; padding: 48px 32px; line-height: 1.55; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid #0f75b0; padding-bottom: 10px; color: #173f56; }
+  h2 { font-size: 1.3rem; color: #173f56; margin-top: 2em; }
+  h3 { font-size: 1.1rem; color: #173f56; }
+  blockquote { border-left: 4px solid #375e4c; margin: 1em 0; padding: 8px 16px; background: #ecf5f2; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.95rem; }
+  th, td { border: 1px solid #b6c2cf; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e6ecf1; color: #173f56; }
+  hr { border: none; border-top: 1px solid #d7dfe8; margin: 2em 0; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+${mdToHtml(md)}
+</body>
+</html>`;
+}
+
+const clean = (s) => String(s || '').trim();
+const oneLine = (s) => clean(s).replace(/\s*\n+\s*/g, ' ').replace(/\|/g, '/');
+const orTbd = (s) => clean(s) || '*Not yet recorded.*';
+
+function ucPhase(uc, id) { return uc.phases[id] || { fields: {}, consensus: '' }; }
+
+function progress(uc) {
+  const ids = PHASES.filter((p) => p.scope === 'usecase').map((p) => p.id);
+  return { done: ids.filter((id) => clean(ucPhase(uc, id).consensus)).length, total: ids.length };
+}
+
+function buildBrief(ws, uc) {
+  const p2 = ucPhase(uc, 'p2'), p3 = ucPhase(uc, 'p3'), p4 = ucPhase(uc, 'p4'), p5 = ucPhase(uc, 'p5'), p6 = ucPhase(uc, 'p6');
+  const goals = (p2.fields.goalTypes || []).join(', ');
+  const pr = progress(uc);
+  const md = [];
+  md.push(`# AI Use Case Brief: ${uc.name}`);
+  md.push(`**Team:** ${ws.teamName} · **Phases agreed:** ${pr.done} of ${pr.total}`);
+  if (goals) md.push(`**Improvement goal:** ${goals}`);
+  md.push('## 1. The process today', orTbd(p2.consensus || p2.fields.steps));
+  md.push('## 2. The AI opportunity', orTbd(p3.consensus));
+  md.push('## 3. Data readiness', orTbd(p4.consensus));
+  md.push('## 4. Risks and mitigations', orTbd(p5.consensus));
+  md.push('## 5. Intended outcomes and metrics', orTbd(p6.consensus));
+  md.push('---', '*Drafted by the team in the AI Use Case Sandbox. A human reviewed each phase; treat AI suggestions as input, not decisions.*');
+  return md.join('\n\n');
+}
+
+function buildPortfolio(ws) {
+  const md = [];
+  md.push(`# AI Use Case Portfolio: ${ws.teamName}`);
+  const ideaCount = ws.ideas.length;
+  const ucs = Object.values(ws.useCases);
+  md.push(`${ideaCount} candidate process${ideaCount === 1 ? '' : 'es'} identified; ${ucs.length} taken forward as use case${ucs.length === 1 ? '' : 's'}.`);
+  if (clean(ws.phase1.consensus)) md.push('## Why these processes', clean(ws.phase1.consensus));
+  if (ucs.length) {
+    const rows = ['| Use case | Goal | Phases agreed | Intended outcome |', '| --- | --- | --- | --- |'];
+    for (const uc of ucs) {
+      const pr = progress(uc);
+      rows.push(`| ${oneLine(uc.name)} | ${oneLine((ucPhase(uc, 'p2').fields.goalTypes || []).join(', ')) || '—'} | ${pr.done}/${pr.total} | ${oneLine(ucPhase(uc, 'p6').consensus).slice(0, 160) || '—'} |`);
+    }
+    md.push('## Use cases', rows.join('\n'));
+  }
+  const unpicked = ws.ideas.filter((i) => !i.promoted);
+  if (unpicked.length) {
+    md.push('## Ideas on the shelf');
+    md.push(BUCKETS.map((b) => {
+      const items = unpicked.filter((i) => i.bucket === b.id);
+      return items.length ? `**${b.label}**\n\n` + items.map((i) => `- ${i.text}`).join('\n') : '';
+    }).filter(Boolean).join('\n\n'));
+  }
+  return md.join('\n\n');
+}
+
+// Word opens this HTML as an editable document (same approach as the Socratic Sandbox's Export Word).
+function wordDocument(title, md) {
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#182330}
+h1{font-size:20pt;color:#173f56}
+h2{font-size:14pt;color:#173f56;margin-top:18pt}
+table{border-collapse:collapse}th,td{border:1px solid #b6c2cf;padding:4pt 6pt;vertical-align:top}th{background:#e6ecf1}
+p{line-height:1.4}
+</style></head><body>
+${mdToHtml(md)}
+</body></html>`;
+}
+
+const EXPORT_TYPES = {
+  brief: { label: 'Use case brief', perUseCase: true },
+  portfolio: { label: 'Use case portfolio', perUseCase: false }
+};
+
+module.exports = { buildBrief, buildPortfolio, printableHtml, wordDocument, progress, EXPORT_TYPES };
+
+return module.exports;
+})();
+// Browser stand-in for server.js. Same endpoints and rules, but data lives in
+// localStorage.
+(function () {
+  const T = __mods['./template'], P = __mods['./prompts'], X = __mods['./exports'];
+  const { PHASES, BUCKETS, getPhase } = T;
+  const store = __mods['./store'];
+
+  const str = (x, max = 20000) => (typeof x === 'string' ? x.slice(0, max) : '');
+  const fail = (msg) => { throw new Error(msg); };
+  const newPhaseState = () => ({ fields: {}, pasted: '', consensus: '' });
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+
+  function getWs(id) { return store.load().workspaces[id] || fail('Workspace not found'); }
+  function getUc(ws, id) { return ws.useCases[id] || fail('Use case not found'); }
+  function resolvePhase(ws, phaseId, ucId) {
+    const phase = getPhase(phaseId) || fail('Unknown phase');
+    if (phase.scope === 'workspace') return { phase, uc: null, state: ws.phase1 };
+    const uc = getUc(ws, ucId);
+    if (!uc.phases[phase.id]) uc.phases[phase.id] = newPhaseState();
+    return { phase, uc, state: uc.phases[phase.id] };
+  }
+  function newUseCase(name, userName, ideaId) {
+    const phases = {};
+    for (const p of PHASES.filter((x) => x.scope === 'usecase')) phases[p.id] = newPhaseState();
+    return { id: store.nextId('uc'), name, ideaId: ideaId || null, createdAt: new Date().toISOString(), createdBy: userName || '', phases };
+  }
+  function touch(ws, userName) {
+    ws.updatedAt = new Date().toISOString();
+    const name = str(userName, 80).trim();
+    if (name && !ws.members.includes(name)) ws.members.push(name);
+  }
+  const selectedIdeas = (ws) => ws.ideas.filter((i) => i.selected).map((i) => i.text);
+  function summarize(ws) {
+    const ucs = Object.values(ws.useCases);
+    const total = ucs.length * 5, done = ucs.reduce((n, uc) => n + X.progress(uc).done, 0);
+    return { id: ws.id, teamName: ws.teamName, members: ws.members, updatedAt: ws.updatedAt, ideaCount: ws.ideas.length, useCaseCount: ucs.length, completion: total ? Math.round((done / total) * 100) : 0 };
+  }
+
+  // --- JSON endpoints ------------------------------------------------------
+  const routes = [];
+  const route = (method, pattern, fn) => routes.push({ method, re: new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$'), fn });
+
+  route('GET', '/api/template', () => ({ phases: PHASES, buckets: BUCKETS, goalTypes: T.GOAL_TYPES, outcomeTypes: T.OUTCOME_TYPES, exportTypes: X.EXPORT_TYPES }));
+  route('GET', '/api/workspaces', () => Object.values(store.load().workspaces).map(summarize).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
+  route('POST', '/api/workspaces', (m, q, b) => {
+    const teamName = str(b.teamName, 120).trim();
+    if (!teamName) fail('Please enter a team or agency name.');
+    const now = new Date().toISOString();
+    const ws = { id: store.nextId('ws'), teamName, members: [], createdAt: now, updatedAt: now, ideas: [], phase1: newPhaseState(), useCases: {} };
+    touch(ws, b.userName);
+    store.load().workspaces[ws.id] = ws;
+    store.save();
+    return clone(ws);
+  });
+  route('GET', '/api/workspaces/:id', (m) => { const ws = getWs(m[1]); return { ...clone(ws), summary: summarize(ws) }; });
+  route('DELETE', '/api/workspaces/:id', (m) => { getWs(m[1]); delete store.load().workspaces[m[1]]; store.save(); return { ok: true }; });
+
+  route('POST', '/api/workspaces/:id/ideas', (m, q, b) => {
+    const ws = getWs(m[1]);
+    const text = str(b.text, 500).trim();
+    if (!text) fail('Describe the process in a few words.');
+    const bucket = BUCKETS.some((x) => x.id === b.bucket) ? b.bucket : 'other';
+    const idea = { id: store.nextId('idea'), text, bucket, selected: false, promoted: false, by: str(b.userName, 80).trim() };
+    ws.ideas.push(idea); touch(ws, b.userName); store.save();
+    return idea;
+  });
+  route('PATCH', '/api/workspaces/:id/ideas/:ideaId', (m, q, b) => {
+    const ws = getWs(m[1]);
+    const idea = ws.ideas.find((i) => i.id === m[2]) || fail('Idea not found');
+    if (typeof b.selected === 'boolean') idea.selected = b.selected;
+    if (typeof b.text === 'string' && b.text.trim()) idea.text = str(b.text, 500).trim();
+    if (BUCKETS.some((x) => x.id === b.bucket)) idea.bucket = b.bucket;
+    touch(ws, b.userName); store.save();
+    return idea;
+  });
+  route('DELETE', '/api/workspaces/:id/ideas/:ideaId', (m) => {
+    const ws = getWs(m[1]);
+    const i = ws.ideas.findIndex((x) => x.id === m[2]);
+    if (i < 0) fail('Idea not found');
+    ws.ideas.splice(i, 1); store.save();
+    return { ok: true };
+  });
+
+  route('POST', '/api/workspaces/:id/use-cases', (m, q, b) => {
+    const ws = getWs(m[1]);
+    const created = [];
+    if (b.fromSelectedIdeas) {
+      const picks = ws.ideas.filter((i) => i.selected && !i.promoted);
+      if (!picks.length) fail('Tick at least one idea on the board that has not already been promoted.');
+      for (const idea of picks) {
+        const uc = newUseCase(idea.text.slice(0, 120), b.userName, idea.id);
+        uc.phases.p2.fields.processName = idea.text.slice(0, 120);
+        ws.useCases[uc.id] = uc; idea.promoted = true; created.push(uc);
+      }
+    } else {
+      const name = str(b.name, 120).trim();
+      if (!name) fail('Give the use case a short name.');
+      const uc = newUseCase(name, b.userName);
+      uc.phases.p2.fields.processName = name;
+      ws.useCases[uc.id] = uc; created.push(uc);
+    }
+    touch(ws, b.userName); store.save();
+    return created;
+  });
+  route('PATCH', '/api/workspaces/:id/use-cases/:ucId', (m, q, b) => {
+    const ws = getWs(m[1]); const uc = getUc(ws, m[2]);
+    const name = str(b.name, 120).trim();
+    if (!name) fail('Name cannot be empty.');
+    uc.name = name; touch(ws, b.userName); store.save();
+    return uc;
+  });
+  route('DELETE', '/api/workspaces/:id/use-cases/:ucId', (m) => {
+    const ws = getWs(m[1]); const uc = getUc(ws, m[2]);
+    const idea = ws.ideas.find((i) => i.id === uc.ideaId);
+    if (idea) idea.promoted = false;
+    delete ws.useCases[uc.id]; store.save();
+    return { ok: true };
+  });
+
+  route('PUT', '/api/workspaces/:id/phases/:phaseId', (m, q, b) => {
+    const ws = getWs(m[1]);
+    const { phase, state } = resolvePhase(ws, m[2], b.useCaseId || q.useCaseId);
+    if (b.fields && typeof b.fields === 'object' && phase.huddle.fields) {
+      for (const f of phase.huddle.fields) {
+        if (!(f.id in b.fields)) continue;
+        const val = b.fields[f.id];
+        state.fields[f.id] = f.type === 'chips' ? (Array.isArray(val) ? val.filter((x) => f.options.includes(x)) : []) : str(val);
+      }
+    }
+    if (typeof b.pasted === 'string') state.pasted = str(b.pasted, 60000);
+    if (typeof b.consensus === 'string') state.consensus = str(b.consensus);
+    touch(ws, b.userName); store.save();
+    return state;
+  });
+  async function request(path, opts = {}) {
+    const [p, qs] = path.split('?');
+    const method = (opts.method || 'GET').toUpperCase();
+    const q = Object.fromEntries(new URLSearchParams(qs || ''));
+    const body = opts.body && typeof opts.body === 'object' ? opts.body : {};
+    for (const r of routes) {
+      const m = r.method === method && p.match(r.re);
+      if (m) return r.fn(m, q, body);
+    }
+    throw new Error('Not found');
+  }
+
+  // --- Exports (opened from a Blob, since there is no server to serve them) ---
+  function exportDoc(href) {
+    const [p, qs] = href.split('?');
+    const q = Object.fromEntries(new URLSearchParams(qs || ''));
+    const m = p.match(/^\/api\/workspaces\/([^/]+)\/export\/(\w+)$/);
+    const ws = getWs(m[1]);
+    let md, title;
+    if (m[2] === 'brief') { const uc = getUc(ws, q.useCaseId); md = X.buildBrief(ws, uc); title = `AI Use Case Brief: ${uc.name}`; }
+    else { md = X.buildPortfolio(ws); title = `AI Use Case Portfolio: ${ws.teamName}`; }
+    if (q.format === 'md' || q.format === 'doc') {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(q.format === 'doc'
+        ? new Blob([X.wordDocument(title, md)], { type: 'application/msword' })
+        : new Blob([md], { type: 'text/markdown' }));
+      a.download = title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() + '.' + q.format;
+      document.body.appendChild(a); a.click(); a.remove();
+    } else {
+      window.open(URL.createObjectURL(new Blob([X.printableHtml(title, md)], { type: 'text/html' })), '_blank');
+    }
+  }
+
+  window.StandaloneApi = { request, exportDoc };
+})();
+
+'use strict';
+
+// AI Use Case Sandbox — frontend.
+// Vanilla JS single-page app. `state` holds everything; screens re-render #main,
+// but typing never triggers a re-render (inputs autosave in place) so focus is never lost.
+
+const state = {
+  template: null,
+  workspaces: [],
+  ws: null,
+  screen: 'home',
+  useCaseId: null,
+  phaseId: 'p2',
+  promptEdits: {},          // "<ucId|ws>:<phaseId>" -> text the team edited by hand
+  userName: localStorage.getItem('ucs_userName') || ''
+};
+
+const $main = document.getElementById('main');
+const $tabs = document.getElementById('tabs');
+const $headerWs = document.getElementById('header-ws');
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// In the single-file build, StandaloneApi stands in for the server (see standalone/shim.js).
+async function api(path, opts = {}) {
+  if (window.StandaloneApi) return window.StandaloneApi.request(path, opts);
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) {
+    let msg = 'Request failed';
+    try { msg = (await res.json()).error || msg; } catch (_) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+const wsUrl = (suffix = '') => `/api/workspaces/${state.ws.id}${suffix}`;
+const phases = () => state.template.phases;
+const phaseDef = (id) => phases().find((p) => p.id === id);
+const ucPhases = () => phases().filter((p) => p.scope === 'usecase');
+const currentUc = () => (state.ws && state.ws.useCases[state.useCaseId]) || null;
+const filled = (s) => !!(s && String(s).trim());
+
+function phaseState(phase, uc) {
+  return phase.scope === 'workspace' ? state.ws.phase1 : uc.phases[phase.id];
+}
+function phaseDone(phase, uc) { return filled(phaseState(phase, uc).consensus); }
+function ucProgress(uc) { return ucPhases().filter((p) => phaseDone(p, uc)).length; }
+function selectedIdeas() { return state.ws.ideas.filter((i) => i.selected).map((i) => i.text); }
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function flashSaved(el) {
+  if (!el) return;
+  el.textContent = 'Saved';
+  el.style.opacity = 1;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = 0; }, 1200);
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (_) {}
+  const ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (_) {}
+  ta.remove();
+  return ok;
+}
+
+async function reloadWorkspace() { state.ws = await api(wsUrl()); }
+
+// ---------------------------------------------------------------------------
+// Navigation
+// ---------------------------------------------------------------------------
+
+function go(screen) { state.screen = screen; render(); }
+
+$main.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-export]');
+  if (a && window.StandaloneApi) { e.preventDefault(); window.StandaloneApi.exportDoc(a.getAttribute('href')); }
+});
+
+$tabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-screen]');
+  if (btn) go(btn.dataset.screen);
+});
+
+function render() {
+  $tabs.hidden = !state.ws;
+  for (const btn of $tabs.querySelectorAll('button')) btn.classList.toggle('active', btn.dataset.screen === state.screen);
+  if (state.ws) {
+    $headerWs.innerHTML = `<span>${esc(state.ws.teamName)}</span><button class="linkish" id="switch-ws">Switch workspace</button>`;
+    document.getElementById('switch-ws').onclick = () => { state.ws = null; state.screen = 'home'; loadHome(); };
+  } else {
+    $headerWs.innerHTML = '';
+  }
+  const screens = { home: renderHome, dashboard: renderDashboard, ideas: renderIdeas, usecases: renderUseCases, export: renderExport };
+  (screens[state.screen] || renderHome)();
+  window.scrollTo(0, 0);
+}
+
+// ---------------------------------------------------------------------------
+// Home
+// ---------------------------------------------------------------------------
+
+async function loadHome() {
+  state.workspaces = await api('/api/workspaces');
+  render();
+}
+
+function renderHome() {
+  const rows = state.workspaces.map((w) => `
+    <div class="section-row" data-ws="${esc(w.id)}">
+      <div class="title">${esc(w.teamName)}
+        <small>${w.ideaCount} idea${w.ideaCount === 1 ? '' : 's'} · ${w.useCaseCount} use case${w.useCaseCount === 1 ? '' : 's'}${w.members.length ? ' · Team: ' + esc(w.members.join(', ')) : ''}</small>
+      </div>
+      <div class="uc-meter"><div class="progress-wrap"><div class="progress-bar" style="width:${w.completion}%"></div></div></div>
+    </div>`).join('');
+
+  $main.innerHTML = `
+    <div class="card">
+      <h2>Welcome</h2>
+      <p class="lead">Your AI strategy says where you want to go. This sandbox helps your team find the specific work where AI will actually help, then pressure-test each idea with your own AI tool before anyone builds anything.</p>
+      <div class="grid-2">
+        <div>
+          <h3>Start a workspace</h3>
+          <label class="field-label" for="new-team">Team or agency name</label>
+          <input type="text" id="new-team" placeholder="e.g., Licensing Division">
+          <label class="field-label" for="new-user">Your name <span style="font-weight:400;color:var(--muted)">(so teammates can see who contributed)</span></label>
+          <input type="text" id="new-user" value="${esc(state.userName)}" placeholder="e.g., Jordan Smith">
+          <div class="btn-row"><button class="primary" id="create-ws">Create workspace</button></div>
+          <div id="create-err" class="notice warn" hidden></div>
+        </div>
+        <div>
+          <h3>How it works</h3>
+          <ol style="padding-left:1.2em;font-size:0.92rem;color:var(--muted)">
+            <li><strong>Candidates:</strong> brainstorm processes with friction and shortlist a few.</li>
+            <li>For each shortlisted use case, work through five phases: <strong>process, AI opportunity, data, risks, outcomes.</strong></li>
+            <li>Every phase has the same three steps: <strong>Huddle</strong> (capture what you know), <strong>Interrogate</strong> (copy the prompt into your AI and let it poke holes), <strong>Consensus</strong> (record what you agree).</li>
+            <li>Export a one-page brief per use case, or a portfolio view.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    ${state.workspaces.length ? `<div class="card"><h2>Existing workspaces</h2><p class="lead">Anyone on your team can open a workspace and pick up where others left off.</p>${rows}</div>` : ''}`;
+
+  document.getElementById('create-ws').onclick = async () => {
+    const teamName = document.getElementById('new-team').value.trim();
+    const userName = document.getElementById('new-user').value.trim();
+    const err = document.getElementById('create-err');
+    if (!teamName) { err.textContent = 'Please enter a team or agency name.'; err.hidden = false; return; }
+    if (userName) { state.userName = userName; localStorage.setItem('ucs_userName', userName); }
+    try {
+      const ws = await api('/api/workspaces', { method: 'POST', body: { teamName, userName } });
+      await openWorkspace(ws.id, 'ideas');
+    } catch (e) { err.textContent = e.message; err.hidden = false; }
+  };
+  for (const row of $main.querySelectorAll('[data-ws]')) row.onclick = () => openWorkspace(row.dataset.ws, 'dashboard');
+}
+
+async function openWorkspace(id, screen) {
+  state.ws = await api(`/api/workspaces/${id}`);
+  const ids = Object.keys(state.ws.useCases);
+  state.useCaseId = ids.length ? ids[0] : null;
+  state.phaseId = 'p2';
+  go(screen);
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard
+// ---------------------------------------------------------------------------
+
+function renderDashboard() {
+  const ws = state.ws;
+  const ucs = Object.values(ws.useCases);
+  const p1 = phaseDef('p1');
+  const p1Status = phaseDone(p1) ? 'complete' : ws.ideas.length ? 'needs_input' : 'not_started';
+  const pillLabel = { complete: 'Agreed', needs_input: 'In progress', not_started: 'Not started' };
+
+  const ucRows = ucs.map((uc) => {
+    const n = ucProgress(uc);
+    const next = ucPhases().find((p) => !phaseDone(p, uc));
+    return `<div class="section-row" data-uc="${esc(uc.id)}">
+      <div class="title">${esc(uc.name)}<small>${n} of 5 phases agreed${next ? ' · next: ' + esc(next.title) : ' · ready to export'}</small></div>
+      <div class="uc-meter"><div class="progress-wrap"><div class="progress-bar" style="width:${n * 20}%"></div></div></div>
+    </div>`;
+  }).join('');
+
+  $main.innerHTML = `
+    <div class="card">
+      <h2>${esc(ws.teamName)}</h2>
+      <p class="lead">Start with candidate processes, shortlist a few, then take each through five phases.</p>
+      <div class="section-row" id="go-ideas">
+        <div class="num">1</div>
+        <div class="title">${esc(p1.title)}<small>${ws.ideas.length} idea${ws.ideas.length === 1 ? '' : 's'} on the board · ${ws.ideas.filter((i) => i.selected).length} ticked for interrogation</small></div>
+        <span class="pill ${p1Status}">${pillLabel[p1Status]}</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="flex-between"><h2>Use cases</h2><button class="secondary" id="new-uc">+ New use case</button></div>
+      ${ucs.length ? `<p class="lead">Each use case goes through phases 2–6: process, AI opportunity, data, risks, outcomes.</p>${ucRows}`
+        : `<div class="empty-state"><div class="big">🧭</div>No use cases yet. Tick a few ideas on the Idea Board and promote them, or add one directly.</div>`}
+    </div>
+    <div class="card">
+      <h2>Working with your AI</h2>
+      <p class="lead">This app writes the prompts. You run them in whichever AI tool your organization has approved, including one running on your own machine, then bring the answers back.</p>
+      <ol style="font-size:0.92rem;color:var(--muted)">
+        <li>Open your approved AI tool and start <strong>one conversation per use case</strong>. Keep working in it from phase to phase.</li>
+        <li>In each phase's <strong>Interrogate</strong> step, press <strong>Copy prompt</strong> and paste it into the AI. Answer its questions and push back.</li>
+        <li>Paste the response into the app so it stays with your notes, then agree the result as a team in <strong>Consensus</strong>.</li>
+        <li>Starting a fresh chat later? Use <strong>Copy "story so far"</strong> to bring the new chat up to speed.</li>
+      </ol>
+    </div>`;
+
+  document.getElementById('go-ideas').onclick = () => go('ideas');
+  document.getElementById('new-uc').onclick = promptNewUseCase;
+  for (const row of $main.querySelectorAll('[data-uc]')) row.onclick = () => { state.useCaseId = row.dataset.uc; state.phaseId = 'p2'; go('usecases'); };
+}
+
+async function promptNewUseCase() {
+  const name = (window.prompt('Short name for the use case (you can rename it later):') || '').trim();
+  if (!name) return;
+  try {
+    const [uc] = await api(wsUrl('/use-cases'), { method: 'POST', body: { name, userName: state.userName } });
+    await reloadWorkspace();
+    state.useCaseId = uc.id; state.phaseId = 'p2';
+    go('usecases');
+  } catch (e) { alert(e.message); }
+}
+
+// ---------------------------------------------------------------------------
+// Phase panel (shared by Idea Board and Use Cases)
+// ---------------------------------------------------------------------------
+
+function promptKey(phase, uc) { return `${uc ? uc.id : 'ws'}:${phase.id}`; }
+
+function generatedPrompt(phase, uc) {
+  const st = phaseState(phase, uc);
+  return Prompts.buildPrompt(phase.id, { team: state.ws.teamName, ideas: selectedIdeas(), fields: st.fields, uc });
+}
+
+function renderField(f, value) {
+  const label = `<label class="field-label" for="f-${f.id}">${esc(f.label)}</label>${f.help ? `<div class="help-text">${esc(f.help)}</div>` : ''}`;
+  if (f.type === 'text') return `${label}<input type="text" id="f-${f.id}" data-field="${f.id}" value="${esc(value || '')}" placeholder="${esc(f.placeholder || '')}">`;
+  if (f.type === 'chips') {
+    const sel = Array.isArray(value) ? value : [];
+    return `${label}<div class="choices" data-chips="${f.id}">${f.options.map((o) =>
+      `<button type="button" class="chip${sel.includes(o) ? ' selected' : ''}" data-val="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  }
+  return `${label}<textarea id="f-${f.id}" data-field="${f.id}" rows="${f.rows || 4}">${esc(value || '')}</textarea>`;
+}
+
+function tickMessage(n) {
+  return n > 4 ? `${n} ideas ticked. Three or four gets sharper questions from the AI.` : 'Tick the ideas you want to interrogate on the board above.';
+}
+
+function renderIdeaBoard() {
+  const ws = state.ws;
+  return `<div class="bucket-grid">${state.template.buckets.map((b) => {
+    const items = ws.ideas.filter((i) => i.bucket === b.id);
+    return `<div class="bucket">
+      <h4>${esc(b.label)}</h4><div class="help-text">${esc(b.help)}</div>
+      ${items.map((i) => `<div class="idea${i.promoted ? ' promoted' : ''}">
+          <input type="checkbox" id="chk-${esc(i.id)}" data-idea="${esc(i.id)}" ${i.selected ? 'checked' : ''}>
+          <label for="chk-${esc(i.id)}">${esc(i.text)}${i.promoted ? ' <span class="pill complete">use case</span>' : ''}</label>
+          <button class="danger-subtle" data-del-idea="${esc(i.id)}" title="Remove">✕</button>
+        </div>`).join('')}
+      <div class="add-idea"><input type="text" data-add-bucket="${b.id}" placeholder="Add a process…"><button class="secondary" data-add-btn="${b.id}">Add</button></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderPhasePanel(phase, uc) {
+  const st = phaseState(phase, uc);
+  const key = promptKey(phase, uc);
+  const promptText = key in state.promptEdits ? state.promptEdits[key] : generatedPrompt(phase, uc);
+  const ticked = selectedIdeas().length;
+
+  const huddleBody = phase.scope === 'workspace'
+    ? renderIdeaBoard()
+    : phase.huddle.fields.map((f) => renderField(f, st.fields[f.id])).join('') +
+      (phase.huddle.prompts ? `<details class="hint"><summary>Questions to prompt your thinking</summary><ul class="risk-list">${phase.huddle.prompts.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></details>` : '');
+
+  const earlier = phase.id === 'p4' || phase.id === 'p5' || phase.id === 'p6';
+  const missingP3 = earlier && !phaseDone(phaseDef('p3'), uc)
+    ? `<div class="notice warn">Phase 3 has no agreed AI opportunity yet, so this prompt has a gap. Finish Phase 3's consensus first for a better result.</div>` : '';
+  const p1Note = phase.id === 'p1' ? `<div class="notice ${ticked > 4 ? 'warn' : 'info'}" id="tick-note" ${ticked >= 1 && ticked <= 4 ? 'hidden' : ''}>${tickMessage(ticked)}</div>` : '';
+
+  const idx = ucPhases().findIndex((p) => p.id === phase.id);
+  const nextPhase = uc && idx >= 0 && idx < ucPhases().length - 1 ? ucPhases()[idx + 1] : null;
+
+  return `
+    <div class="card">
+      <div class="flex-between" style="align-items:flex-start">
+        <div>
+          <p class="kicker">Phase ${phase.number} of 6 · ${esc(phase.short)}</p>
+          <h2>${esc(phase.title)}</h2>
+          <p class="lead" style="margin:6px 0 0;max-width:820px">${esc(phase.goal)}</p>
+        </div>
+        <span class="pill ${filled(st.consensus) ? 'complete' : 'not_started'}" id="phase-pill" aria-live="polite">${filled(st.consensus) ? 'Agreed' : 'Not yet agreed'}</span>
+      </div>
+    </div>
+
+    <div class="card step huddle">
+      <span class="step-tag">Step 1 · Huddle</span>
+      <p class="lead">${esc(phase.huddle.intro)}</p>
+      ${huddleBody}
+      <div class="save-flash" id="flash-fields" style="opacity:0"></div>
+    </div>
+
+    <div class="card step interrogate">
+      <span class="step-tag">Step 2 · Interrogate</span>
+      <p class="lead">${esc(phase.interrogate.intro)}</p>
+      ${p1Note}${missingP3}
+      <label class="field-label" for="prompt-box">Prompt <span style="font-weight:400;color:var(--muted)">(built from your Step 1 answers; edit freely)</span></label>
+      <textarea id="prompt-box" class="prompt-box">${esc(promptText)}</textarea>
+      <div class="btn-row">
+        <button class="primary" id="copy-prompt">Copy prompt</button>
+        <button class="secondary" id="copy-primer">Copy "story so far"</button>
+        <button class="subtle" id="reset-prompt" ${key in state.promptEdits ? '' : 'hidden'}>Reset to generated prompt</button>
+        <span class="save-flash" id="flash-copy" style="opacity:0;align-self:center"></span>
+      </div>
+      <div class="help-text">Paste the prompt into your approved AI tool and keep going in the same conversation. If you start a fresh chat, paste the "story so far" first so it knows what you have already agreed.</div>
+      <label class="field-label" for="pasted">The AI's response <span style="font-weight:400;color:var(--muted)">(paste it here to keep it with your notes)</span></label>
+      <textarea id="pasted" rows="9" placeholder="Paste the response here, including any follow-up exchanges worth keeping.">${esc(st.pasted)}</textarea>
+      <div class="save-flash" id="flash-pasted" style="opacity:0"></div>
+    </div>
+
+    <div class="card step consensus">
+      <span class="step-tag">Step 3 · Consensus</span>
+      <label class="field-label" for="consensus" style="margin-top:0">${esc(phase.consensus.label)}</label>
+      <div class="help-text">${esc(phase.consensus.help)}</div>
+      <textarea id="consensus" rows="7">${esc(st.consensus)}</textarea>
+      <div class="save-flash" id="flash-consensus" style="opacity:0"></div>
+      <div class="btn-row">
+        ${phase.id === 'p1' ? `<button class="primary" id="promote">Promote ticked ideas to use cases</button>` : ''}
+        ${nextPhase ? `<button class="primary" id="next-phase">Continue to Phase ${nextPhase.number} →</button>` : ''}
+        ${uc && !nextPhase ? `<button class="primary" id="to-export">Go to Export Center →</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function bindPhasePanel(phase, uc) {
+  const st = phaseState(phase, uc);
+  const key = promptKey(phase, uc);
+  const body = (extra) => ({ ...(uc ? { useCaseId: uc.id } : {}), userName: state.userName, ...extra });
+  const put = (extra) => api(wsUrl(`/phases/${phase.id}`), { method: 'PUT', body: body(extra) });
+  const $prompt = document.getElementById('prompt-box');
+
+  const refreshPrompt = () => {
+    if (key in state.promptEdits) return;
+    $prompt.value = generatedPrompt(phase, uc);
+  };
+
+  // Huddle fields (phases 2-6)
+  if (phase.scope === 'usecase') {
+    const saveFields = debounce(async () => {
+      try { st.fields = await put({ fields: st.fields }).then((s) => s.fields); flashSaved(document.getElementById('flash-fields')); } catch (e) { alert(e.message); }
+    }, 600);
+    for (const el of $main.querySelectorAll('[data-field]')) {
+      el.addEventListener('input', () => { st.fields[el.dataset.field] = el.value; refreshPrompt(); saveFields(); });
+    }
+    for (const group of $main.querySelectorAll('[data-chips]')) {
+      group.addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip'); if (!chip) return;
+        chip.classList.toggle('selected');
+        st.fields[group.dataset.chips] = [...group.querySelectorAll('.chip.selected')].map((c) => c.dataset.val);
+        refreshPrompt(); saveFields();
+      });
+    }
+  } else {
+    bindIdeaBoard(refreshPrompt);
+  }
+
+  // Prompt editing
+  $prompt.addEventListener('input', () => {
+    state.promptEdits[key] = $prompt.value;
+    document.getElementById('reset-prompt').hidden = false;
+  });
+  document.getElementById('reset-prompt').onclick = () => {
+    delete state.promptEdits[key];
+    $prompt.value = generatedPrompt(phase, uc);
+    document.getElementById('reset-prompt').hidden = true;
+  };
+  const flash = document.getElementById('flash-copy');
+  const copyWith = async (text, label) => {
+    const ok = await copyText(text);
+    flashSaved(flash);
+    flash.textContent = ok ? `${label} copied` : 'Copy failed. Select the text and copy it manually.';
+  };
+  document.getElementById('copy-prompt').onclick = () => copyWith($prompt.value, 'Prompt');
+  document.getElementById('copy-primer').onclick = () => copyWith(Prompts.contextPrimer(state.ws.teamName, uc, uc ? [] : selectedIdeas()), '"Story so far"');
+
+  // Pasted AI response + consensus
+  const savePasted = debounce(async () => { await put({ pasted: st.pasted }); flashSaved(document.getElementById('flash-pasted')); }, 600);
+  document.getElementById('pasted').addEventListener('input', (e) => { st.pasted = e.target.value; savePasted(); });
+  const saveConsensus = debounce(async () => { await put({ consensus: st.consensus }); flashSaved(document.getElementById('flash-consensus')); refreshStepper(); }, 600);
+  document.getElementById('consensus').addEventListener('input', (e) => {
+    st.consensus = e.target.value;
+    const pill = document.getElementById('phase-pill');
+    pill.textContent = filled(st.consensus) ? 'Agreed' : 'Not yet agreed';
+    pill.className = `pill ${filled(st.consensus) ? 'complete' : 'not_started'}`;
+    saveConsensus();
+  });
+
+  const next = document.getElementById('next-phase');
+  if (next) next.onclick = () => {
+    const list = ucPhases(); state.phaseId = list[list.findIndex((p) => p.id === phase.id) + 1].id; render();
+  };
+  const toExport = document.getElementById('to-export');
+  if (toExport) toExport.onclick = () => go('export');
+  const promote = document.getElementById('promote');
+  if (promote) promote.onclick = async () => {
+    try {
+      const made = await api(wsUrl('/use-cases'), { method: 'POST', body: { fromSelectedIdeas: true, userName: state.userName } });
+      await reloadWorkspace();
+      state.useCaseId = made[0].id; state.phaseId = 'p2';
+      go('usecases');
+    } catch (e) { alert(e.message); }
+  };
+}
+
+function bindIdeaBoard(refreshPrompt) {
+  const add = async (bucket) => {
+    const input = $main.querySelector(`[data-add-bucket="${bucket}"]`);
+    const text = input.value.trim(); if (!text) return;
+    try {
+      await api(wsUrl('/ideas'), { method: 'POST', body: { text, bucket, userName: state.userName } });
+      await reloadWorkspace(); render();
+      const again = $main.querySelector(`[data-add-bucket="${bucket}"]`); if (again) again.focus();
+    } catch (e) { alert(e.message); }
+  };
+  for (const btn of $main.querySelectorAll('[data-add-btn]')) btn.onclick = () => add(btn.dataset.addBtn);
+  for (const input of $main.querySelectorAll('[data-add-bucket]')) input.addEventListener('keydown', (e) => { if (e.key === 'Enter') add(input.dataset.addBucket); });
+  for (const chk of $main.querySelectorAll('[data-idea]')) {
+    chk.addEventListener('change', async () => {
+      const idea = state.ws.ideas.find((i) => i.id === chk.dataset.idea);
+      idea.selected = chk.checked;
+      await api(wsUrl(`/ideas/${idea.id}`), { method: 'PATCH', body: { selected: chk.checked, userName: state.userName } });
+      refreshPrompt();
+      const n = selectedIdeas().length, note = document.getElementById('tick-note');
+      note.hidden = n >= 1 && n <= 4;
+      note.className = `notice ${n > 4 ? 'warn' : 'info'}`;
+      note.textContent = tickMessage(n);
+    });
+  }
+  for (const del of $main.querySelectorAll('[data-del-idea]')) {
+    del.onclick = async () => { await api(wsUrl(`/ideas/${del.dataset.delIdea}`), { method: 'DELETE' }); await reloadWorkspace(); render(); };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Idea Board and Use Cases screens
+// ---------------------------------------------------------------------------
+
+function renderIdeas() {
+  const phase = phaseDef('p1');
+  $main.innerHTML = renderPhasePanel(phase, null);
+  bindPhasePanel(phase, null);
+}
+
+function stepperHtml(uc) {
+  return `<div class="phase-stepper" id="stepper" role="group" aria-label="Phases">${ucPhases().map((p) => {
+    const done = phaseDone(p, uc);
+    return `<button type="button" data-phase="${p.id}" class="${p.id === state.phaseId ? 'active' : ''}${done ? ' done' : ''}" aria-current="${p.id === state.phaseId}" aria-label="Phase ${p.number}: ${esc(p.short)}${done ? ', agreed' : ', not yet agreed'}"><strong aria-hidden="true">${p.number}</strong><span aria-hidden="true">${esc(p.short)}</span></button>`;
+  }).join('')}</div>`;
+}
+
+function captureItems(uc) {
+  return ucPhases().map((p) => `<article class="capture-item${p.id === state.phaseId ? ' current' : ''}"><h3>${p.number}. ${esc(p.title)}</h3><p>${esc(phaseState(p, uc).consensus.trim() || 'Awaiting team consensus.')}</p></article>`).join('');
+}
+
+function captureHtml(uc) {
+  const n = ucProgress(uc);
+  return `<aside class="card capture" aria-label="Use case capture">
+    <div class="capture-head"><h2>Use Case Capture</h2><p id="capture-count" aria-live="polite">${n} of 5 phases agreed.</p><div class="progress-wrap"><div class="progress-bar" id="capture-bar" style="width:${n * 20}%"></div></div></div>
+    <div class="capture-scroll" id="capture-items" role="region" aria-label="Agreed phase text" tabindex="0">${captureItems(uc)}</div>
+    <div class="capture-actions"><a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}`)}" target="_blank">Open brief</a><a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=doc`)}">Export Word</a></div>
+  </aside>`;
+}
+
+function refreshStepper() {
+  const uc = currentUc(); const el = document.getElementById('stepper');
+  if (!uc || !el) return;
+  el.outerHTML = stepperHtml(uc);
+  bindStepper();
+  const n = ucProgress(uc);
+  document.getElementById('capture-count').textContent = `${n} of 5 phases agreed.`;
+  document.getElementById('capture-bar').style.width = `${n * 20}%`;
+  document.getElementById('capture-items').innerHTML = captureItems(uc);
+}
+
+function bindStepper() {
+  for (const btn of $main.querySelectorAll('#stepper [data-phase]')) btn.onclick = () => { state.phaseId = btn.dataset.phase; render(); };
+}
+
+function renderUseCases() {
+  const ws = state.ws;
+  const ucs = Object.values(ws.useCases);
+  if (!ucs.length) {
+    $main.innerHTML = `<div class="card"><div class="empty-state"><div class="big">🧭</div>No use cases yet.<div class="btn-row" style="justify-content:center">
+      <button class="primary" id="goto-ideas">Go to the Idea Board</button><button class="secondary" id="new-uc">+ New use case</button></div></div></div>`;
+    document.getElementById('goto-ideas').onclick = () => go('ideas');
+    document.getElementById('new-uc').onclick = promptNewUseCase;
+    return;
+  }
+  if (!ws.useCases[state.useCaseId]) state.useCaseId = ucs[0].id;
+  const uc = currentUc();
+  if (phaseDef(state.phaseId).scope !== 'usecase') state.phaseId = 'p2';
+  const phase = phaseDef(state.phaseId);
+
+  $main.innerHTML = `
+    <div class="card">
+      <div class="flex-between">
+        <div style="flex:1;min-width:240px">
+          <label class="field-label" for="uc-select" style="margin-top:0">Use case</label>
+          <select id="uc-select">${ucs.map((u) => `<option value="${esc(u.id)}" ${u.id === uc.id ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}</select>
+        </div>
+        <div class="btn-row" style="margin:0"><button class="secondary" id="new-uc">+ New</button><button class="subtle" id="rename-uc">Rename</button><button class="danger-subtle" id="delete-uc">Delete</button></div>
+      </div>
+      ${stepperHtml(uc)}
+    </div>
+    <div class="with-aside"><div>${renderPhasePanel(phase, uc)}</div>${captureHtml(uc)}</div>`;
+
+  document.getElementById('uc-select').onchange = (e) => { state.useCaseId = e.target.value; render(); };
+  document.getElementById('new-uc').onclick = promptNewUseCase;
+  document.getElementById('rename-uc').onclick = async () => {
+    const name = (window.prompt('New name:', uc.name) || '').trim(); if (!name) return;
+    await api(wsUrl(`/use-cases/${uc.id}`), { method: 'PATCH', body: { name, userName: state.userName } });
+    await reloadWorkspace(); render();
+  };
+  document.getElementById('delete-uc').onclick = async () => {
+    if (!confirm(`Delete "${uc.name}" and everything recorded for it?`)) return;
+    await api(wsUrl(`/use-cases/${uc.id}`), { method: 'DELETE' });
+    await reloadWorkspace(); state.useCaseId = null; render();
+  };
+  bindStepper();
+  bindPhasePanel(phase, uc);
+}
+
+// ---------------------------------------------------------------------------
+// Export Center
+// ---------------------------------------------------------------------------
+
+function renderExport() {
+  const ws = state.ws;
+  const ucs = Object.values(ws.useCases);
+  const rows = ucs.map((uc) => `
+    <div class="doc-item"><div class="meta"><div class="name">${esc(uc.name)}</div><div class="sub">${ucProgress(uc)} of 5 phases agreed</div></div>
+      <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}`)}" target="_blank">View / print</a>
+      <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=doc`)}">Word</a>
+      <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=md`)}">Markdown</a></div>`).join('');
+  $main.innerHTML = `
+    <div class="card">
+      <h2>Use case briefs</h2>
+      <p class="lead">One page per use case: process, AI opportunity, data readiness, risks, and intended outcomes. Open it and print or save as PDF from your browser.</p>
+      ${rows || '<div class="empty-state">No use cases yet.</div>'}
+    </div>
+    <div class="card">
+      <h2>Portfolio</h2>
+      <p class="lead">All use cases side by side, plus the ideas still on the shelf. Good for a leadership conversation about what to pursue first.</p>
+      <div class="btn-row" style="margin-top:0"><a class="btnlike" data-export href="${wsUrl('/export/portfolio')}" target="_blank">View / print</a><a class="btnlike" data-export href="${wsUrl('/export/portfolio?format=doc')}">Word</a><a class="btnlike" data-export href="${wsUrl('/export/portfolio?format=md')}">Markdown</a></div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------------
+
+(async function init() {
+  state.template = await api('/api/template');
+  await loadHome();
+})();
+
+  </script>
+</body>
+</html>
