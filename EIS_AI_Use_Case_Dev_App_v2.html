@@ -277,7 +277,7 @@ details.hint summary { cursor: pointer; color: var(--blue); font-weight: 700; }
       </div>
     </div>
     <div class="ws-name" id="header-ws"></div>
-    <p class="tagline">Huddle. Interrogate. Agree. Use your own approved AI tool, then capture the team's use cases.</p>
+    <p class="tagline">Describe it. Ask the AI to poke holes. Decide. Use your own approved AI tool.</p>
   </header>
 
   <nav class="tabs" id="tabs" aria-label="Sections" hidden>
@@ -399,7 +399,7 @@ const PHASES = [
         { id: 'handoff', label: 'Box 4 · What happens next', type: 'textarea', help: 'Where do the outputs go? Which people or systems take them in?' }
       ]
     },
-    interrogate: { intro: 'The AI will ask you 3 questions, one at a time, to pressure-test the opportunity. Answer each in the chat. It will not write the opportunity statement; you do that in Step 3.' },
+    interrogate: { intro: 'The AI asks 3 questions, one at a time. Answer each in the chat. After the third, it lists the gaps and what to change. You write the final statement in Step 3.' },
     consensus: {
       label: 'Rewrite your opportunity statement using what you learned.',
       help: 'Write it in your own words, including any changes you made in response to the questions. This is the final AI opportunity.'
@@ -518,9 +518,13 @@ const module = { exports: {} }; const require = (p) => __mods[p]; const process 
         'before asking the next. Make each question independent and aimed at assumptions, blind spots, or perspectives we ' +
         'have not considered, such as gaps in the data, the AI steps, or the human review of outputs. Do not restate the ' +
         'context I have already given.\n\n' +
-        'Do not write or rewrite the opportunity statement. I will write it myself. After my third answer, offer to ask the ' +
-        'same kind of questions about our specific request types or work categories, keeping my earlier answers in mind.\n\n' +
-        concise('2 sentences per turn');
+        'Do not write or rewrite the opportunity statement. I will write it myself.\n\n' +
+        'After my third answer, give me a short read-out. For each of my three answers, say in one line whether it fully ' +
+        'addresses the concern or leaves a gap, and name the gap. Then list the 2 or 3 most important things I should ' +
+        'change, add, or decide before I finalize the opportunity, each with a concrete suggestion for how to do it. ' +
+        'Finish by offering to ask the same kind of questions about our specific request types or work categories, ' +
+        'keeping my earlier answers in mind.\n\n' +
+        concise('2 sentences per question, and 3 to 5 bullets for the read-out after my third answer');
     },
 
     p4(ctx) {
@@ -1060,7 +1064,7 @@ function renderHome() {
           <ol style="padding-left:1.2em;font-size:0.92rem;color:var(--muted)">
             <li><strong>Candidates:</strong> brainstorm processes with friction and shortlist a few.</li>
             <li>For each shortlisted use case, work through five phases: <strong>process, AI opportunity, data, risks, outcomes.</strong></li>
-            <li>Every phase has the same three steps: <strong>Huddle</strong> (capture what you know), <strong>Interrogate</strong> (copy the prompt into your AI and let it poke holes), <strong>Consensus</strong> (record what you agree).</li>
+            <li>Every phase has the same three steps: <strong>Describe it</strong> (what you know), <strong>Ask the AI</strong> (copy the prompt and let it poke holes), <strong>Decide</strong> (record what you agree).</li>
             <li>Export a one-page brief per use case, or a portfolio view.</li>
           </ol>
         </div>
@@ -1116,7 +1120,7 @@ function renderDashboard() {
       <p class="lead">Start with candidate processes, shortlist a few, then take each through five phases.</p>
       <div class="section-row" id="go-ideas">
         <div class="num">1</div>
-        <div class="title">${esc(p1.title)}<small>${ws.ideas.length} idea${ws.ideas.length === 1 ? '' : 's'} on the board · ${ws.ideas.filter((i) => i.selected).length} ticked for interrogation</small></div>
+        <div class="title">${esc(p1.title)}<small>${ws.ideas.length} idea${ws.ideas.length === 1 ? '' : 's'} on the board · ${ws.ideas.filter((i) => i.selected).length} ticked</small></div>
         <span class="pill ${p1Status}">${pillLabel[p1Status]}</span>
       </div>
     </div>
@@ -1127,12 +1131,11 @@ function renderDashboard() {
     </div>
     <div class="card">
       <h2>Working with your AI</h2>
-      <p class="lead">This app writes the prompts. You run them in whichever AI tool your organization has approved, including one running on your own machine, then bring the answers back.</p>
+      <p class="lead">This app writes the prompts. You run them in your organization's approved AI tool.</p>
       <ol style="font-size:0.92rem;color:var(--muted)">
-        <li>Open your approved AI tool and start <strong>one conversation per use case</strong>. Keep working in it from phase to phase.</li>
-        <li>In each phase's <strong>Interrogate</strong> step, press <strong>Copy prompt</strong> and paste it into the AI. Answer its questions and push back.</li>
-        <li>Paste the response into the app so it stays with your notes, then agree the result as a team in <strong>Consensus</strong>.</li>
-        <li>Starting a fresh chat later? Use <strong>Copy "story so far"</strong> to bring the new chat up to speed.</li>
+        <li>Start <strong>one AI conversation per use case</strong> and stay in it.</li>
+        <li>In <strong>Ask the AI</strong>, press <strong>Copy prompt</strong>, paste it into the AI, and answer its questions.</li>
+        <li>Write down what your team agrees in <strong>Decide</strong>.</li>
       </ol>
     </div>`;
 
@@ -1175,7 +1178,7 @@ function renderField(f, value) {
 }
 
 function tickMessage(n) {
-  return n > 4 ? `${n} ideas ticked. Three or four gets sharper questions from the AI.` : 'Tick the ideas you want to interrogate on the board above.';
+  return n > 4 ? `${n} ideas ticked. Three or four gets sharper questions from the AI.` : 'Tick the ideas you want to work on, on the board above.';
 }
 
 function renderIdeaBoard() {
@@ -1227,32 +1230,36 @@ function renderPhasePanel(phase, uc) {
     </div>
 
     <div class="card step huddle">
-      <span class="step-tag">Step 1 · Huddle</span>
+      <span class="step-tag">Step 1 · Describe it</span>
       <p class="lead">${esc(phase.huddle.intro)}</p>
       ${huddleBody}
       <div class="save-flash" id="flash-fields" style="opacity:0"></div>
     </div>
 
     <div class="card step interrogate">
-      <span class="step-tag">Step 2 · Interrogate</span>
+      <span class="step-tag">Step 2 · Ask the AI</span>
       <p class="lead">${esc(phase.interrogate.intro)}</p>
       ${p1Note}${missingP3}
-      <label class="field-label" for="prompt-box">Prompt <span style="font-weight:400;color:var(--muted)">(built from your Step 1 answers; edit freely)</span></label>
-      <textarea id="prompt-box" class="prompt-box">${esc(promptText)}</textarea>
       <div class="btn-row">
         <button class="primary" id="copy-prompt">Copy prompt</button>
-        <button class="secondary" id="copy-primer">Copy "story so far"</button>
-        <button class="subtle" id="reset-prompt" ${key in state.promptEdits ? '' : 'hidden'}>Reset to generated prompt</button>
         <span class="save-flash" id="flash-copy" style="opacity:0;align-self:center"></span>
       </div>
-      <div class="help-text"><strong>These prompts are a starting point. Edit them to fit your situation.</strong> Paste the prompt into your approved AI tool and keep going in the same conversation. If you start a fresh chat, paste the "story so far" first so it knows what you have already agreed.</div>
-      <label class="field-label" for="pasted">The AI's response <span style="font-weight:400;color:var(--muted)">(paste it here to keep it with your notes)</span></label>
-      <textarea id="pasted" rows="9" placeholder="Paste the response here, including any follow-up exchanges worth keeping.">${esc(st.pasted)}</textarea>
+      <div class="help-text"><strong>These prompts are a starting point. Edit them to fit your situation.</strong> Paste into your approved AI tool and stay in the same conversation.</div>
+      <details class="hint"><summary>See or edit the prompt</summary>
+        <textarea id="prompt-box" class="prompt-box" aria-label="Prompt">${esc(promptText)}</textarea>
+        <div class="btn-row">
+          <button class="subtle" id="reset-prompt" ${key in state.promptEdits ? '' : 'hidden'}>Reset to generated prompt</button>
+          <button class="secondary" id="copy-primer">Copy "story so far"</button>
+        </div>
+        <div class="help-text">Starting a new chat? Paste the "story so far" first so the AI knows what you have already agreed.</div>
+      </details>
+      <label class="field-label" for="pasted">The AI's response <span style="font-weight:400;color:var(--muted)">(optional: paste it here to keep it with your notes)</span></label>
+      <textarea id="pasted" rows="6" placeholder="Paste the response here, including any follow-up exchanges worth keeping.">${esc(st.pasted)}</textarea>
       <div class="save-flash" id="flash-pasted" style="opacity:0"></div>
     </div>
 
     <div class="card step consensus">
-      <span class="step-tag">Step 3 · Consensus</span>
+      <span class="step-tag">Step 3 · Decide</span>
       <label class="field-label" for="consensus" style="margin-top:0">${esc(phase.consensus.label)}</label>
       <div class="help-text">${esc(phase.consensus.help)}</div>
       <textarea id="consensus" rows="7">${esc(st.consensus)}</textarea>
