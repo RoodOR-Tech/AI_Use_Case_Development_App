@@ -108,7 +108,7 @@ main:focus { outline: none; }
 
 /* --- Buttons & forms ------------------------------------------------------ */
 
-button.primary, button.secondary, button.subtle, a.btnlike {
+button.primary, button.secondary, button.subtle, button.danger, a.btnlike {
   min-height: 44px; border-radius: var(--radius); padding: 9px 16px; font-size: 0.92rem; font-weight: 700; cursor: pointer;
   border: 1px solid transparent; font-family: inherit; text-decoration: none; display: inline-flex;
   align-items: center; justify-content: center; gap: 8px; transition: transform 0.16s ease, box-shadow 0.16s ease;
@@ -121,6 +121,10 @@ button.secondary, a.btnlike { background: var(--btn-soft); color: var(--navy-tex
 button.secondary:hover, a.btnlike:hover { background: #d8e1e8; }
 button.subtle { background: #fff; color: var(--navy-text); border-color: #b6c2cf; }
 button.subtle:hover { background: var(--soft); }
+button.danger { background: var(--red); color: #fff; }
+button.danger:hover { background: #742419; }
+button.danger:disabled { background: #c9aba6; cursor: not-allowed; }
+.section-row input.rm-box { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--red); cursor: pointer; }
 button.danger-subtle { background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.85rem; font-weight: 700; min-height: 36px; padding: 4px 8px; }
 
 input[type="text"], textarea, select {
@@ -892,6 +896,7 @@ const state = {
   screen: 'home',
   useCaseId: null,
   phaseId: 'p2',
+  removeMode: null,         // screen name while its list is in select-and-remove mode
   promptEdits: {},          // "<ucId|ws>:<phaseId>" -> text the team edited by hand
   userName: localStorage.getItem('ucs_userName') || ''
 };
@@ -982,6 +987,7 @@ $tabs.addEventListener('click', (e) => {
 });
 
 function render() {
+  if (state.removeMode !== state.screen) state.removeMode = null;
   $tabs.hidden = !state.ws;
   for (const btn of $tabs.querySelectorAll('button')) btn.classList.toggle('active', btn.dataset.screen === state.screen);
   if (state.ws) {
@@ -996,6 +1002,53 @@ function render() {
 }
 
 // ---------------------------------------------------------------------------
+// Select-and-remove mode, shared by the workspace list (Home) and the use case
+// list (Dashboard).
+// ---------------------------------------------------------------------------
+
+const removing = () => state.removeMode === state.screen;
+const removeBoxHtml = (id) => (removing() ? `<input type="checkbox" class="rm-box" data-rm="${esc(id)}" aria-label="Select for removal">` : '');
+function removeToolbarHtml() {
+  if (!removing()) return `<button class="subtle" id="rm-start">Select to remove</button>`;
+  return `<div class="btn-row" style="margin:0"><button class="subtle" id="rm-all">Select all</button><button class="danger" id="rm-go" disabled>Remove selected</button><button class="subtle" id="rm-cancel">Cancel</button></div>`;
+}
+
+// Returns true while the list is in remove mode, so the caller skips its normal row clicks.
+// names: id -> display name. removeOne(id) deletes one item. after() reloads and re-renders.
+function bindRemoveMode({ noun, names, detail, removeOne, after }) {
+  const rerender = (mode) => { const y = window.scrollY; state.removeMode = mode; render(); window.scrollTo(0, y); };
+  const start = document.getElementById('rm-start');
+  if (start) start.onclick = () => rerender(state.screen);
+  const goBtn = document.getElementById('rm-go');
+  if (!goBtn) return false;
+
+  const allBtn = document.getElementById('rm-all');
+  const boxes = [...$main.querySelectorAll('input[data-rm]')];
+  const picked = () => boxes.filter((b) => b.checked).map((b) => b.dataset.rm);
+  const sync = () => {
+    const n = picked().length;
+    goBtn.disabled = !n;
+    goBtn.textContent = n ? `Remove selected (${n})` : 'Remove selected';
+    allBtn.textContent = n === boxes.length ? 'Select none' : 'Select all';
+  };
+  for (const box of boxes) {
+    box.closest('.section-row').onclick = (e) => { if (e.target !== box) box.checked = !box.checked; sync(); };
+  }
+  allBtn.onclick = () => { const on = picked().length !== boxes.length; for (const b of boxes) b.checked = on; sync(); };
+  document.getElementById('rm-cancel').onclick = () => rerender(null);
+  goBtn.onclick = async () => {
+    const ids = picked();
+    if (!ids.length) return;
+    const list = ids.map((id) => '• ' + names[id]).join('\n');
+    if (!confirm(`Permanently remove ${ids.length} ${noun}${ids.length === 1 ? '' : 's'}?\n\n${list}\n\n${detail} This cannot be undone.`)) return;
+    try { for (const id of ids) await removeOne(id); } catch (e) { alert(e.message); }
+    state.removeMode = null;
+    await after();
+  };
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // Home
 // ---------------------------------------------------------------------------
 
@@ -1007,6 +1060,7 @@ async function loadHome() {
 function renderHome() {
   const rows = state.workspaces.map((w) => `
     <div class="section-row" data-ws="${esc(w.id)}">
+      ${removeBoxHtml(w.id)}
       <div class="title">${esc(w.teamName)}
         <small>${w.ideaCount} idea${w.ideaCount === 1 ? '' : 's'} · ${w.useCaseCount} use case${w.useCaseCount === 1 ? '' : 's'}${w.members.length ? ' · Team: ' + esc(w.members.join(', ')) : ''}</small>
       </div>
@@ -1038,7 +1092,7 @@ function renderHome() {
         </div>
       </div>
     </div>
-    ${state.workspaces.length ? `<div class="card"><h2>Existing workspaces</h2><p class="lead">Anyone on your team can open a workspace and pick up where others left off.</p>${rows}</div>` : ''}`;
+    ${state.workspaces.length ? `<div class="card"><div class="flex-between"><h2>Existing workspaces</h2>${removeToolbarHtml()}</div><p class="lead">${removing() ? 'Tick the workspaces to remove. Removing a workspace deletes its ideas and use cases too.' : 'Anyone on your team can open a workspace and pick up where others left off.'}</p>${rows}</div>` : ''}`;
 
   document.getElementById('create-ws').onclick = async () => {
     const teamName = document.getElementById('new-team').value.trim();
@@ -1051,7 +1105,14 @@ function renderHome() {
       await openWorkspace(ws.id, 'ideas');
     } catch (e) { err.textContent = e.message; err.hidden = false; }
   };
-  for (const row of $main.querySelectorAll('[data-ws]')) row.onclick = () => openWorkspace(row.dataset.ws, 'dashboard');
+  const inRemoveMode = bindRemoveMode({
+    noun: 'workspace',
+    names: Object.fromEntries(state.workspaces.map((w) => [w.id, w.teamName])),
+    detail: 'All ideas, use cases and notes in them will be deleted.',
+    removeOne: (id) => api(`/api/workspaces/${id}`, { method: 'DELETE' }),
+    after: loadHome
+  });
+  if (!inRemoveMode) for (const row of $main.querySelectorAll('[data-ws]')) row.onclick = () => openWorkspace(row.dataset.ws, 'dashboard');
 }
 
 async function openWorkspace(id, screen) {
@@ -1077,6 +1138,7 @@ function renderDashboard() {
     const n = ucProgress(uc);
     const next = ucPhases().find((p) => !phaseDone(p, uc));
     return `<div class="section-row" data-uc="${esc(uc.id)}">
+      ${removeBoxHtml(uc.id)}
       <div class="title">${esc(uc.name)}<small>${n} of 5 phases agreed${next ? ' · next: ' + esc(next.title) : ' · ready to export'}</small></div>
       <div class="uc-meter"><div class="progress-wrap"><div class="progress-bar" style="width:${n * 20}%"></div></div></div>
     </div>`;
@@ -1093,8 +1155,8 @@ function renderDashboard() {
       </div>
     </div>
     <div class="card">
-      <div class="flex-between"><h2>Use cases</h2><button class="secondary" id="new-uc">+ New use case</button></div>
-      ${ucs.length ? `<p class="lead">Each use case goes through phases 2–6: process, AI opportunity, data, risks, outcomes.</p>${ucRows}`
+      <div class="flex-between"><h2>Use cases</h2><div class="btn-row" style="margin:0">${removing() ? '' : '<button class="secondary" id="new-uc">+ New use case</button>'}${ucs.length ? removeToolbarHtml() : ''}</div></div>
+      ${ucs.length ? `<p class="lead">${removing() ? 'Tick the use cases to remove. Everything recorded for them is deleted; their ideas stay on the Idea Board.' : 'Each use case goes through phases 2–6: process, AI opportunity, data, risks, outcomes.'}</p>${ucRows}`
         : `<div class="empty-state"><div class="big">🧭</div>No use cases yet. Tick a few ideas on the Idea Board and promote them, or add one directly.</div>`}
     </div>
     <div class="card">
@@ -1109,8 +1171,20 @@ function renderDashboard() {
     </div>`;
 
   document.getElementById('go-ideas').onclick = () => go('ideas');
-  document.getElementById('new-uc').onclick = promptNewUseCase;
-  for (const row of $main.querySelectorAll('[data-uc]')) row.onclick = () => { state.useCaseId = row.dataset.uc; state.phaseId = 'p2'; go('usecases'); };
+  const newUc = document.getElementById('new-uc');
+  if (newUc) newUc.onclick = promptNewUseCase;
+  const inRemoveMode = bindRemoveMode({
+    noun: 'use case',
+    names: Object.fromEntries(ucs.map((uc) => [uc.id, uc.name])),
+    detail: 'Everything recorded for them will be deleted.',
+    removeOne: (id) => api(wsUrl(`/use-cases/${id}`), { method: 'DELETE' }),
+    after: async () => {
+      await reloadWorkspace();
+      if (!state.ws.useCases[state.useCaseId]) state.useCaseId = Object.keys(state.ws.useCases)[0] || null;
+      render();
+    }
+  });
+  if (!inRemoveMode) for (const row of $main.querySelectorAll('[data-uc]')) row.onclick = () => { state.useCaseId = row.dataset.uc; state.phaseId = 'p2'; go('usecases'); };
 }
 
 async function promptNewUseCase() {
