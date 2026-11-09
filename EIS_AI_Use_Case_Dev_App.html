@@ -336,6 +336,7 @@ const BUCKETS = [
 ];
 
 const GOAL_TYPES = ['Automation', 'Efficiency', 'Standardization'];
+const AI_CAPABILITIES = ['Knowledge Retrieval', 'Enterprise Search', 'Question Answering', 'Summarization', 'Content Generation', 'Classification', 'Data Extraction', 'Entity Recognition', 'Translation', 'Recommendation Generation', 'Workflow Automation', 'Multi-Step Reasoning', 'Knowledge Agent', 'Analytics & Reporting', 'External System Integration', 'Other'];
 const OUTCOME_TYPES = ['Time savings', 'Greater satisfaction', 'Increased throughput', 'Better consistency or quality', 'Lower cost', 'Other'];
 
 const RISK_PROMPTS = [
@@ -373,6 +374,7 @@ const PHASES = [
       intro: 'Describe the process as it works today, not as it should work. Rough is fine.',
       fields: [
         { id: 'processName', label: 'Process name', type: 'text', placeholder: 'e.g., Responding to public records requests' },
+        { id: 'businessArea', label: 'Business area', type: 'text', placeholder: 'e.g., Records Management, Licensing, Customer Service' },
         { id: 'people', label: 'People involved', type: 'textarea', help: 'Roles, teams, and anyone outside the agency who touches the work.' },
         { id: 'systems', label: 'Systems and tools', type: 'textarea', help: 'Software, shared drives, email inboxes, paper, spreadsheets.' },
         { id: 'steps', label: 'Process steps, in order', type: 'textarea', rows: 8, help: 'One step per line, from trigger to finish.' },
@@ -392,12 +394,16 @@ const PHASES = [
     title: 'Describe the AI opportunity',
     goal: 'Identify the specific parts of the process where AI could help, and detail how it would work: inputs, what the AI does, outputs, and how it fits with the human-led steps.',
     huddle: {
-      intro: 'Describe in detail how you envision an AI system that addresses the pain point. Fill in the four boxes.',
+      intro: 'Describe in detail how you envision an AI system that addresses the pain point.',
       fields: [
-        { id: 'inputs', label: 'Box 1 · Data inputs', type: 'textarea', help: 'Describe the data inputs that will go into the AI system.' },
-        { id: 'actions', label: 'Box 2 · What the AI does', type: 'textarea', help: 'What steps will it take, in what order? Think back to the process description.' },
-        { id: 'outputs', label: 'Box 3 · Outputs', type: 'textarea', help: 'What outputs will the system generate?' },
-        { id: 'handoff', label: 'Box 4 · What happens next', type: 'textarea', help: 'Where do the outputs go? Which people or systems take them in?' }
+        { id: 'actions', label: 'Summary description', type: 'textarea', help: 'What will the AI do? What steps will it take, in what order? Think back to the process description.' },
+        { id: 'inputs', label: 'Input prompts', type: 'textarea', help: 'Describe the inputs and prompts that will go into the AI system.' },
+        { id: 'refData', label: 'Reference data sources', type: 'textarea', help: 'Documents, databases, policies, or knowledge sources the AI will draw on.' },
+        { id: 'outputs', label: 'Expected outputs', type: 'textarea', help: 'What outputs will the system generate, and where do they go next?' },
+        { id: 'boundary', label: 'What is the boundary of this AI use case?', type: 'textarea', help: 'Describe: what the AI should do; what the AI should not do; known limitations; activities that remain outside the AI solution. Example: "The AI may draft responses and locate relevant information but may not approve actions, make final decisions, or perform policy interpretation."' },
+        { id: 'humanLed', label: 'What parts of the process will remain human-led?', type: 'textarea', help: 'Examples: final approvals, exception handling, policy interpretation, compliance decisions, escalations, quality assurance reviews, customer interactions.' },
+        { id: 'capabilities', label: 'What AI capabilities or functionalities are required?', type: 'chips', multi: true, options: AI_CAPABILITIES, help: 'Identify the AI capabilities needed to implement this use case. Choose all that apply.' },
+        { id: 'capabilitiesOther', label: 'Additional capability requirements', type: 'textarea', rows: 3, help: 'Anything else the solution needs, including functionality that may go beyond current AI tools.' }
       ]
     },
     interrogate: { intro: 'Ask the AI what you are missing: gaps in the data, the process, or the human review of outputs.' },
@@ -451,7 +457,7 @@ const PHASES = [
 
 function getPhase(id) { return PHASES.find((p) => p.id === id); }
 
-module.exports = { PHASES, BUCKETS, GOAL_TYPES, OUTCOME_TYPES, RISK_PROMPTS, getPhase };
+module.exports = { PHASES, BUCKETS, GOAL_TYPES, AI_CAPABILITIES, OUTCOME_TYPES, RISK_PROMPTS, getPhase };
 
 return module.exports;
 })();
@@ -504,7 +510,10 @@ const module = { exports: {} }; const require = (p) => __mods[p]; const process 
       const process = consensusOf(ctx.uc, 'p2') || (p2 && p2.fields && (p2.fields.pain || '').trim()) || BLANK;
       return `The process and pain point we want to address:\n${process}\n\n` +
         `We are proposing to address this pain point by creating an AI-enabled process that takes ${v(f.inputs)}, ` +
-        `asks the AI to ${v(f.actions)}, and generates ${v(f.outputs)}. The outputs will then be ${v(f.handoff)}.\n\n` +
+        `using these reference data sources: ${v(f.refData)}. The AI will ${v(f.actions)}, and generates ${v(f.outputs)}.\n\n` +
+        `Boundary of the use case: ${v(f.boundary)}\n` +
+        `Parts of the process that remain human-led: ${v(f.humanLed)}\n` +
+        `AI capabilities required: ${v([list(f.capabilities), (f.capabilitiesOther || '').trim()].filter(Boolean).join('; '))}\n\n` +
         'What are we missing? Would any additional data be needed? Do you see any gaps in the AI system process or in how ' +
         'the outputs are used? Give us a few observations about the process and one to three recommendations about how to ' +
         'improve it, keeping in mind appropriate constraints on what the AI system does and appropriate processes for ' +
@@ -567,6 +576,7 @@ const module = { exports: {} }; const require = (p) => __mods[p]; const process 
 return module.exports;
 })();
 window.Prompts = __mods['./prompts'];
+window.Exports = null; // set after the exports module loads
 __mods['./exports'] = (function () {
 const module = { exports: {} }; const require = (p) => __mods[p]; const process = { env: {} };
 'use strict';
@@ -645,20 +655,66 @@ function progress(uc) {
   return { done: ids.filter((id) => clean(ucPhase(uc, id).consensus)).length, total: ids.length };
 }
 
+const fld = (p, id) => clean((p.fields || {})[id]);
+const bullets = (arr) => arr.map((x) => `- ${x}`).join('\n');
+
+function capabilityList(p3) {
+  const caps = ((p3.fields || {}).capabilities) || [];
+  const other = fld(p3, 'capabilitiesOther');
+  return { caps, other };
+}
+
+// Required content for a formal submission. Non-blocking: callers warn, never stop.
+function missingItems(uc) {
+  const p2 = ucPhase(uc, 'p2'), p3 = ucPhase(uc, 'p3'), p5 = ucPhase(uc, 'p5'), p6 = ucPhase(uc, 'p6');
+  const { caps, other } = capabilityList(p3);
+  const checks = [
+    ['Business Problem / Opportunity', fld(p2, 'pain') || clean(p2.consensus)],
+    ['AI Opportunity', fld(p3, 'actions') || clean(p3.consensus)],
+    ['Human-Led Activities', fld(p3, 'humanLed')],
+    ['AI Functionalities Required', caps.length || other],
+    ['Risks & Mitigations', fld(p5, 'risks') || clean(p5.consensus)],
+    ['Intended Outcomes', fld(p6, 'outcomes') || clean(p6.consensus)]
+  ];
+  return checks.filter((c) => !c[1]).map((c) => c[0]);
+}
+const MISSING_WARNING = 'This use case is missing information that may be required for formal review or submission.';
+
 function buildBrief(ws, uc) {
   const p2 = ucPhase(uc, 'p2'), p3 = ucPhase(uc, 'p3'), p4 = ucPhase(uc, 'p4'), p5 = ucPhase(uc, 'p5'), p6 = ucPhase(uc, 'p6');
   const goals = (p2.fields.goalTypes || []).join(', ');
-  const pr = progress(uc);
+  const { caps, other } = capabilityList(p3);
   const md = [];
-  md.push(`# AI Use Case Brief: ${uc.name}`);
-  md.push(`**Team:** ${ws.teamName} · **Phases agreed:** ${pr.done} of ${pr.total}`);
-  if (goals) md.push(`**Improvement goal:** ${goals}`);
-  md.push('## 1. The process today', orTbd(p2.consensus || p2.fields.steps));
-  md.push('## 2. The AI opportunity', orTbd(p3.consensus));
-  md.push('## 3. Data readiness', orTbd(p4.consensus));
-  md.push('## 4. Risks and mitigations', orTbd(p5.consensus));
-  md.push('## 5. Intended outcomes and metrics', orTbd(p6.consensus));
-  md.push('---', '*Drafted by the team in the AI Use Case Sandbox. A human reviewed each phase; treat AI suggestions as input, not decisions.*');
+  const sec = (title, body) => md.push(`## ${title}`, body);
+  md.push(`# AI Use Case: ${uc.name}`);
+
+  const summary = [`**Team:** ${ws.teamName}`];
+  if (fld(p2, 'processName')) summary.push(`**Process:** ${fld(p2, 'processName')}`);
+  if (goals) summary.push(`**Improvement goal:** ${goals}`);
+  sec('AI Use Case Summary', summary.join('\n\n'));
+  sec('Business Area', orTbd(fld(p2, 'businessArea')));
+  sec('Business Problem / Opportunity', orTbd(fld(p2, 'pain') || p2.consensus));
+  sec('Current Process', orTbd(p2.consensus || fld(p2, 'steps')));
+
+  md.push('## AI Opportunity');
+  md.push('### Overview', orTbd(fld(p3, 'actions') || p3.consensus));
+  md.push('### Inputs', orTbd(fld(p3, 'inputs')));
+  md.push('### Reference Data', orTbd(fld(p3, 'refData')));
+  md.push('### Outputs', orTbd(fld(p3, 'outputs')));
+
+  sec('Use Case Boundary', orTbd(fld(p3, 'boundary')));
+  sec('Human-Led Activities', orTbd(fld(p3, 'humanLed')));
+  const capParts = [];
+  if (caps.length) capParts.push(bullets(caps));
+  if (other) capParts.push(`**Additional requirements:** ${other}`);
+  sec('AI Functionalities Required', capParts.length ? capParts.join('\n\n') : orTbd(''));
+  sec('Data Readiness Considerations', orTbd(p4.consensus || fld(p4, 'data')));
+  sec('Risks and Mitigations', orTbd(p5.consensus || fld(p5, 'risks')));
+  sec('Intended Outcomes', orTbd(p6.consensus || fld(p6, 'outcomes')));
+
+  const notes = [['Current process', p2], ['AI opportunity', p3], ['Data readiness', p4], ['Risks and mitigations', p5], ['Intended outcomes', p6]]
+    .filter(([, p]) => clean(p.consensus)).map(([label, p]) => `**${label}:** ${clean(p.consensus)}`);
+  sec('Consensus Notes', notes.length ? notes.join('\n\n') : orTbd(''));
   return md.join('\n\n');
 }
 
@@ -709,10 +765,11 @@ const EXPORT_TYPES = {
   portfolio: { label: 'Use case portfolio', perUseCase: false }
 };
 
-module.exports = { buildBrief, buildPortfolio, printableHtml, wordDocument, progress, EXPORT_TYPES };
+module.exports = { buildBrief, buildPortfolio, printableHtml, wordDocument, progress, missingItems, MISSING_WARNING, EXPORT_TYPES };
 
 return module.exports;
 })();
+window.Exports = __mods['./exports'];
 // Browser stand-in for server.js. Same endpoints and rules, but data lives in
 // localStorage.
 (function () {
@@ -755,7 +812,7 @@ return module.exports;
   const routes = [];
   const route = (method, pattern, fn) => routes.push({ method, re: new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$'), fn });
 
-  route('GET', '/api/template', () => ({ phases: PHASES, buckets: BUCKETS, goalTypes: T.GOAL_TYPES, outcomeTypes: T.OUTCOME_TYPES, exportTypes: X.EXPORT_TYPES }));
+  route('GET', '/api/template', () => ({ phases: PHASES, buckets: BUCKETS, goalTypes: T.GOAL_TYPES, capabilities: T.AI_CAPABILITIES, outcomeTypes: T.OUTCOME_TYPES, exportTypes: X.EXPORT_TYPES }));
   route('GET', '/api/workspaces', () => Object.values(store.load().workspaces).map(summarize).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
   route('POST', '/api/workspaces', (m, q, b) => {
     const teamName = str(b.teamName, 120).trim();
@@ -1325,7 +1382,7 @@ function bindPhasePanel(phase, uc) {
   // Huddle fields (phases 2-6)
   if (phase.scope === 'usecase') {
     const saveFields = debounce(async () => {
-      try { st.fields = await put({ fields: st.fields }).then((s) => s.fields); flashSaved(document.getElementById('flash-fields')); } catch (e) { alert(e.message); }
+      try { st.fields = await put({ fields: st.fields }).then((s) => s.fields); flashSaved(document.getElementById('flash-fields')); refreshCaptureWarn(); } catch (e) { alert(e.message); }
     }, 600);
     for (const el of $main.querySelectorAll('[data-field]')) {
       el.addEventListener('input', () => { st.fields[el.dataset.field] = el.value; refreshPrompt(); saveFields(); });
@@ -1440,11 +1497,17 @@ function captureItems(uc) {
   return ucPhases().map((p) => `<article class="capture-item${p.id === state.phaseId ? ' current' : ''}"><h3>${p.number}. ${esc(p.title)}</h3><p>${esc(phaseState(p, uc).consensus.trim() || 'Awaiting team consensus.')}</p></article>`).join('');
 }
 
+function missingNoticeHtml(uc) {
+  const m = Exports.missingItems(uc);
+  return m.length ? `<div class="notice warn">${esc(Exports.MISSING_WARNING)}<br><small>Missing: ${esc(m.join(', '))}. You can still export.</small></div>` : '';
+}
+
 function captureHtml(uc) {
   const n = ucProgress(uc);
   return `<aside class="card capture" aria-label="Use case capture">
     <div class="capture-head"><h2>Use Case Capture</h2><p id="capture-count" aria-live="polite">${n} of 5 phases agreed.</p><div class="progress-wrap"><div class="progress-bar" id="capture-bar" style="width:${n * 20}%"></div></div></div>
     <div class="capture-scroll" id="capture-items" role="region" aria-label="Agreed phase text" tabindex="0">${captureItems(uc)}</div>
+    <div id="capture-warn">${missingNoticeHtml(uc)}</div>
     <div class="capture-actions"><a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}`)}" target="_blank">Open brief</a><a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=doc`)}">Export Word</a></div>
   </aside>`;
 }
@@ -1458,6 +1521,12 @@ function refreshStepper() {
   document.getElementById('capture-count').textContent = `${n} of 5 phases agreed.`;
   document.getElementById('capture-bar').style.width = `${n * 20}%`;
   document.getElementById('capture-items').innerHTML = captureItems(uc);
+  refreshCaptureWarn();
+}
+
+function refreshCaptureWarn() {
+  const uc = currentUc(); const el = document.getElementById('capture-warn');
+  if (uc && el) el.innerHTML = missingNoticeHtml(uc);
 }
 
 function bindStepper() {
@@ -1516,14 +1585,14 @@ function renderExport() {
   const ws = state.ws;
   const ucs = Object.values(ws.useCases);
   const rows = ucs.map((uc) => `
-    <div class="doc-item"><div class="meta"><div class="name">${esc(uc.name)}</div><div class="sub">${ucProgress(uc)} of 5 phases agreed</div></div>
+    <div class="doc-item"><div class="meta"><div class="name">${esc(uc.name)}</div><div class="sub">${ucProgress(uc)} of 5 phases agreed</div>${missingNoticeHtml(uc)}</div>
       <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}`)}" target="_blank">View / print</a>
       <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=doc`)}">Word</a>
       <a class="btnlike" data-export href="${wsUrl(`/export/brief?useCaseId=${uc.id}&format=md`)}">Markdown</a></div>`).join('');
   $main.innerHTML = `
     <div class="card">
       <h2>Use case briefs</h2>
-      <p class="lead">One page per use case: process, AI opportunity, data readiness, risks, and intended outcomes. Open it and print or save as PDF from your browser.</p>
+      <p class="lead">One document per use case, laid out to match the Use Case Challenge Form. Open it and print or save as PDF from your browser.</p>
       ${rows || '<div class="empty-state">No use cases yet.</div>'}
     </div>
     <div class="card">
